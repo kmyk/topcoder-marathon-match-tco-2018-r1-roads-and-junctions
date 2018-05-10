@@ -144,6 +144,7 @@ double compute_cost_of_spanning_tree_kruskal(vector<point_t> const & cities, vec
     return acc;
 }
 
+constexpr double eps = 1e-8;
 pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> > solve(int S, vector<point_t> const & cities, double junction_cost, double failure_probability) {
     double clock_begin = rdtsc();
 
@@ -169,7 +170,7 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
     cerr << "failure probability = " << failure_probability << endl;
     cerr << "reference score = " << reference_score << endl;
 
-    // build a junction to find candidates
+    // build a junction to find candidates for hill climbing
     map<point_t, double> memo;
     auto compute_spanning_tree_with_junction = [&](int y, int x) {
         point_t key = { y, x };
@@ -190,15 +191,14 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
         }
     }
     sort(ALL(candidates));
-    cerr << "size of candidates = " << candidates.size() << endl;
+    cerr << "size of candidates for hill climbing = " << candidates.size() << endl;
 
-    // hill climbing
-    vector<point_t> junctions;
+    // hill climbing to filter candidates
+    vector<pair<double, point_t> > next_candidates;
     const int dy[] = { -1, 1, 0, 0 };
     const int dx[] = { 0, 0, 1, -1 };
     for (auto const & candidate : candidates) {
         double score; point_t p; tie(score, p) = candidate;
-// cerr << "new " << p << " -> " << score<< endl;
         while (true) {
             bool found = false;
             REP (i, 4) {
@@ -210,7 +210,6 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
                     score = nscore;
                     p.y = ny;
                     p.x = nx;
-// cerr << "move " << p << " -> " << score<< endl;
                     break;
                 }
             }
@@ -218,30 +217,67 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
                 break;
             }
         }
-        vector<double> modified_score;
-        REP (k, 5 + 1) {  // 5 = 1 + 4 neighborhoods
-            double p = pow(failure_probability, k);
-            modified_score.push_back((1 - p) * score + p * reference_score + k * junction_cost);
+        double modified_score_1 = (1 - failure_probability) * score + failure_probability * reference_score + junction_cost;
+        if (modified_score_1 > reference_score) {
+            continue;
         }
-        int k = min_element(ALL(modified_score)) - modified_score.begin();
-// if (k == 0) cerr << "rejected " << p << " -> " << reference_score - score << " (k = " << k << ")" << endl;
-        if (k == 0) continue;
         bool found = false;
-        for (point_t q : junctions) {
-            if (calc_distance(p, q) < 30) {
+        for (auto const & it : next_candidates) {
+            point_t q = it.second;
+            if (calc_distance(p, q) < 3 + eps) {
                 found = true;
                 break;
             }
         }
         if (not found) {
-            cerr << "accepted " << p << " -> " << reference_score - score << " (k = " << k << ")" << endl;
-            junctions.push_back(p);
-            REP (i, k - 1) {
-                point_t np = { p.y + dy[i], p.x + dx[i] };
-                junctions.push_back(np);
-            }
+            next_candidates.emplace_back(score, p);
         }
     }
+    candidates.clear();
+    candidates.swap(next_candidates);
+    cerr << "size of candidates after hill climbing = " << candidates.size() << endl;
+
+    // check conflicts
+    sort(ALL(candidates));
+    for (auto const & candidate : candidates) {
+        bool conflicted = false;
+        for (auto const & next_candidate : next_candidates) {
+            double delta1 = (reference_score - candidate.first) + (reference_score - next_candidate.first);
+            vector<point_t> junctions;
+            junctions.push_back(candidate.second);
+            junctions.push_back(next_candidate.second);
+            double delta2 = reference_score - compute_cost_of_spanning_tree_kruskal(cities, junctions, city_tree);
+            if (delta1 > delta2 - eps) {
+                conflicted = true;
+                break;
+            }
+        }
+        if (conflicted) continue;
+        next_candidates.push_back(candidate);
+    }
+    candidates.clear();
+    candidates.swap(next_candidates);
+    cerr << "size of candidates after removing conflicts = " << candidates.size() << endl;
+
+    // construct the result
+    vector<point_t> junctions;
+    for (auto const & candidate : candidates) {
+        double score; point_t p; tie(score, p) = candidate;
+        vector<double> modified_scores;
+        REP (k, 5 + 1) {  // 5 = 1 + 4 neighborhoods
+            double p = pow(failure_probability, k);
+            modified_scores.push_back((1 - p) * score + p * reference_score + k * junction_cost);
+        }
+        int k = min_element(ALL(modified_scores)) - modified_scores.begin();
+        if (k == 0) continue;
+        junctions.push_back(p);
+        REP (i, k - 1) {
+            int ny = max(0, min(S, p.y + dy[i]));
+            int nx = max(0, min(S, p.x + dx[i]));
+            junctions.push_back((point_t) { ny, nx });
+        }
+    }
+
     sort(ALL(junctions));
     junctions.erase(unique(ALL(junctions)), junctions.end());
 

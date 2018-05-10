@@ -11,6 +11,15 @@ template <class T> inline void chmax(T & a, T const & b) { a = max(a, b); }
 template <class T> inline void chmin(T & a, T const & b) { a = min(a, b); }
 template <typename T> ostream & operator << (ostream & out, vector<T> const & xs) { REP (i, int(xs.size()) - 1) out << xs[i] << ' '; if (not xs.empty()) out << xs.back(); return out; }
 
+constexpr double ticks_per_sec = 2800000000;
+constexpr double ticks_per_sec_inv = 1.0 / ticks_per_sec;
+inline double rdtsc() { // in seconds
+    uint32_t lo, hi;
+    asm volatile ("rdtsc" : "=a" (lo), "=d" (hi));
+    return (((uint64_t)hi << 32) | lo) * ticks_per_sec_inv;
+}
+constexpr int TLE = 10; // sec
+
 struct point_t { int y, x; };
 
 double hypot(point_t const & a, point_t const & b) {
@@ -73,14 +82,45 @@ double construct_spanning_tree_prim(vector<point_t> const & cities, vector<point
 }
 
 pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> > solve(int S, vector<point_t> const & cities, double junction_cost, double failure_probability) {
+    double clock_begin = rdtsc();
+
+    // prepare
     int NC = cities.size();
+    vector<pair<int, int> > reference_edges;
+    double reference_score = construct_spanning_tree_prim(cities, vector<point_t>(), reference_edges);
+
+    // print debug info
+#ifdef LOCAL
+    ll seed = -1;
+    if (getenv("SEED") != nullptr) {
+        seed = atoll(getenv("SEED"));
+        cerr << "seed = " << seed << endl;
+    }
+#endif
+    cerr << "S = " << S << endl;
+    cerr << "NC = " << NC << endl;
+    cerr << "reference score = " << reference_score << endl;
+
+    // build junctions
     vector<point_t> junctions;
 
+    // solve roads
     auto cont = [=](vector<bool> const & junction_status) {
         return with_junctions_status(NC, junctions, junction_status, [&](vector<point_t> const & junctions) {
             vector<pair<int, int> > edges;
             construct_spanning_tree_prim(cities, junctions, edges);
 
+            // print debug info
+            double elapsed = rdtsc() - clock_begin;
+            cerr << "elapsed = " << elapsed << endl;
+#ifdef LOCAL
+            cerr << "{\"seed\":" << seed
+                 << ",\"S\":" << S
+                 << ",\"NC\":" << NC
+                 << ",\"reference_score\":" << reference_score
+                 << ",\"elapsed\":" << elapsed
+                 << "}" << endl;
+#endif
             return edges;
         });
     };

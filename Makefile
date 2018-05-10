@@ -25,3 +25,8 @@ submit/full:
 
 standings:
 	oj get-standings '${URL}' --format=csv | sed 's/\w\w\.\w\w\.\w\w\w\w \w\w:\w\w:\w\w/& EST/ ; y/ /~/ ; :1 ; s/,,/,-,/ ; t1 ; s/$$/,|/' | column -t -s , | sed 's/\( \+\)|\?/\1| /g ; s/^/| / ; s/.$$// ; y/~/ / ; 1 { p ; s/[^|]/-/g }'
+
+timestamp := $(shell date +%s)
+score: a.out tester.jar
+	-mkdir log
+	for seed in $$(seq 1 100) ; do java -jar tester.jar -exec ./a.out -debug -seed $$seed | tee /dev/stderr | grep '{"seed":' >> log/${timestamp}.json ; done

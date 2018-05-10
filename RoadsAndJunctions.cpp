@@ -1,10 +1,15 @@
-// C++11
-#include <algorithm>
-#include <cmath>
-#include <iostream>
-#include <vector>
-
+#include <bits/stdc++.h>
+#define REP(i, n) for (int i = 0; (i) < int(n); ++ (i))
+#define REP3(i, m, n) for (int i = (m); (i) < int(n); ++ (i))
+#define REP_R(i, n) for (int i = int(n) - 1; (i) >= 0; -- (i))
+#define REP3R(i, m, n) for (int i = int(n) - 1; (i) >= int(m); -- (i))
+#define ALL(x) begin(x), end(x)
+using ll = long long;
 using namespace std;
+template <class T> using reversed_priority_queue = priority_queue<T, vector<T>, greater<T> >;
+template <class T> inline void chmax(T & a, T const & b) { a = max(a, b); }
+template <class T> inline void chmin(T & a, T const & b) { a = min(a, b); }
+template <typename T> ostream & operator << (ostream & out, vector<T> const & xs) { REP (i, int(xs.size()) - 1) out << xs[i] << ' '; if (not xs.empty()) out << xs.back(); return out; }
 
 class RoadsAndJunctions {
 public:
@@ -26,36 +31,3 @@ public:
         return ret;
     }
 };
-// -------8<------- end of solution submitted to the website -------8<-------
-
-template<class T> void getVector(vector<T>& v) {
-    for (int i = 0; i < v.size(); ++i)
-        cin >> v[i];
-}
-
-int main() {
-    RoadsAndJunctions rj;
-    int S, C;
-    cin >> S >> C;
-    vector<int> cities(C);
-    getVector(cities);
-    double junctionCost, failureProbability;
-    cin >> junctionCost >> failureProbability;
-
-    vector<int> ret = rj.buildJunctions(S, cities, junctionCost, failureProbability);
-    cout << ret.size() << endl;
-    for (int i = 0; i < (int)ret.size(); ++i)
-        cout << ret[i] << endl;
-    cout.flush();
-    
-    int J;
-    cin >> J;
-    vector<int> junctionStatus(J);
-    getVector(junctionStatus);
-
-    ret = rj.buildRoads(junctionStatus);
-    cout << ret.size() << endl;
-    for (int i = 0; i < (int)ret.size(); ++i)
-        cout << ret[i] << endl;
-    cout.flush();
-}

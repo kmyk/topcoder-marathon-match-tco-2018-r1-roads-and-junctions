@@ -248,6 +248,8 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
     // solve roads
     auto cont = [=](vector<bool> const & junction_status) {
         return with_junctions_status(NC, junctions, junction_status, [&](vector<point_t> const & junctions) {
+            int NJ = junction_status.size();
+
             // use all junctions
             vector<point_t> points;
             copy(ALL(cities), back_inserter(points));
@@ -260,6 +262,7 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
                 score += cost;
                 edges.emplace_back(a, b);
             }
+            score += NJ * junction_cost;
 
             // print debug info
             double elapsed = rdtsc() - clock_begin;
@@ -274,7 +277,7 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
                  << ",\"failure_probability\":" << failure_probability
                  << ",\"reference_score\":" << reference_score
                  << ",\"score\":" << score
-                 << ",\"NJ\":" << junction_status.size()
+                 << ",\"NJ\":" << NJ
                  << ",\"reference_delta\":" << reference_score - score
                  << ",\"elapsed\":" << elapsed
                  << "}" << endl;

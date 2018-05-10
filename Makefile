@@ -31,6 +31,19 @@ score: a.out tester.jar
 	-mkdir log
 	for seed in $$(seq 1 100) ; do java -jar tester.jar -exec ./a.out -debug -seed $$seed | tee /dev/stderr | grep '{"seed":' >> log/${timestamp}.json ; done
 
+view =
+view:
+	stat ${view}
+	{ columns=$$(head -n 1 ${view} | grep -o '"\w\+"' | tr -d '"' | xargs) ; \
+		echo $$columns | tr ' ' '\t' ; \
+		cat ${view} | jq -r '"\(.'"$$(echo $$columns | sed 's/ /)\\t\\(./g')"')"' ; } | \
+		sed 's/^/|,/ ; s/\t/,|,/g ; s/$$/,|/' | \
+		column -t -s , | \
+		sed '1 { p ; s/[^|]/-/g }'
+
 plot-gradient:
 	${CXX} ${CXXFLAGS} plot-gradient.cpp -o plot-gradient.bin
-	for seed in $$(seq 1 20) ; do file test/$$seed.in ; N=100 ./plot-gradient.bin < test/$$seed.in | python3 plot-gradient.py test/$$seed.in /dev/stdin --save $$seed.png --no-frame ; file $$seed.png ; done
+	for seed in $$(seq 1 20) ; do \
+		file test/$$seed.in ; N=100 ./plot-gradient.bin < test/$$seed.in | python3 plot-gradient.py test/$$seed.in /dev/stdin --save $$seed.png --no-frame ; \
+		file $$seed.png ; \
+	done

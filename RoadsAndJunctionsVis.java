@@ -353,7 +353,9 @@ public class RoadsAndJunctionsVis {
         }
 
         try {
-            ImageIO.write(bi,"png", new File(fileName + ".png"));
+            File file = new File("vis/" + fileName + ".png");
+            file.getParentFile().mkdirs();
+            ImageIO.write(bi,"png", file);
         } catch (Exception e) { e.printStackTrace(); }
     }
     // -----------------------------------------

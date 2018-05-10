@@ -283,6 +283,7 @@ public class RoadsAndJunctionsVis {
       }
     }
 // ------------- visualization part ------------
+    static String seedStr;
     static String exec, fileName;
     static boolean vis, debug;
     static Process proc;
@@ -301,6 +302,16 @@ public class RoadsAndJunctionsVis {
         sb.append(failProb).append("\n");
         os.write(sb.toString().getBytes());
         os.flush();
+
+        // save input data
+        long seed = Long.parseLong(seedStr);
+        File file = new File("test/" + seed + ".in");
+        if (! file.exists()) {
+            file.getParentFile().mkdirs();
+            FileWriter writer = new FileWriter(file);
+            writer.write(sb.toString());
+            writer.close();
+        }
 
         // and get the return value
         int N = Integer.parseInt(br.readLine());
@@ -381,11 +392,11 @@ public class RoadsAndJunctionsVis {
     }
     // -----------------------------------------
     public static void main(String[] args) {
-        String seed = "1";
+        seedStr = "1";
         vis = true;
         for (int i = 0; i<args.length; i++)
         {   if (args[i].equals("-seed"))
-                seed = args[++i];
+                seedStr = args[++i];
             if (args[i].equals("-exec"))
                 exec = args[++i];
             if (args[i].equals("-novis"))
@@ -396,8 +407,8 @@ public class RoadsAndJunctionsVis {
         if (exec == null)
             vis = true;
         if (vis)
-            fileName = seed;
-        RoadsAndJunctionsVis f = new RoadsAndJunctionsVis(seed);
+            fileName = seedStr;
+        RoadsAndJunctionsVis f = new RoadsAndJunctionsVis(seedStr);
     }
     // -----------------------------------------
     void addFatalError(String message) {

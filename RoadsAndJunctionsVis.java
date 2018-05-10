@@ -46,7 +46,7 @@ public class RoadsAndJunctionsVis {
     int[] roadS, roadE;     // start and end cities/junctions of newly built roads
     // -----------------------------------------
     boolean isInside(int x, int y) {
-        return (x >= 0 && x <= S && x >= 0 && x <= S);
+        return (x >= 0 && x <= S && y >= 0 && y <= S);
     }
     int cityToInt(Pnt p) {
         return p.x * (S+1) + p.y;

@@ -106,7 +106,7 @@ vector<tuple<double, int, int> > construct_spanning_tree_prim(vector<point_t> co
     return edges;
 }
 
-double compute_cost_of_steiner_tree_kruskal(vector<point_t> const & cities, vector<point_t> const & junctions, vector<tuple<double, int, int> > const & city_tree) {
+double compute_cost_of_spanning_tree_kruskal(vector<point_t> const & cities, vector<point_t> const & junctions, vector<tuple<double, int, int> > const & city_tree) {
     int NC = cities.size();
     int NJ = junctions.size();
 
@@ -149,7 +149,6 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
 
     // prepare
     int NC = cities.size();
-    vector<pair<int, int> > reference_edges;
     vector<tuple<double, int, int> > city_tree = construct_spanning_tree_prim(cities);
     double reference_score = 0;
     for (auto const & edge : city_tree) {
@@ -176,7 +175,7 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
         point_t key = { y, x };
         if (memo.count(key)) return memo[key];
         vector<point_t> junctions(1, (point_t) { y, x });
-        return memo[key] = compute_cost_of_steiner_tree_kruskal(cities, junctions, city_tree);
+        return memo[key] = compute_cost_of_spanning_tree_kruskal(cities, junctions, city_tree);
     };
     REP (i, NC) REP (j, i) REP (k, j) {
         int y = round((cities[i].y + cities[j].y + cities[k].y) / 3.0);

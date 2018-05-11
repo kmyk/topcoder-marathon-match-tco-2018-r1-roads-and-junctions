@@ -221,43 +221,32 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
         if (modified_score_1 > reference_score) {
             continue;
         }
-        bool found = false;
-        for (auto const & it : next_candidates) {
-            point_t q = it.second;
-            if (calc_distance(p, q) < 3 + eps) {
-                found = true;
-                break;
-            }
-        }
-        if (not found) {
-            next_candidates.emplace_back(score, p);
-        }
+        next_candidates.emplace_back(score, p);
     }
     candidates.clear();
     candidates.swap(next_candidates);
+    sort(ALL(candidates));
+    candidates.erase(unique(ALL(candidates)), candidates.end());  // while it contains floating points, it's OK since they are memoized value
     cerr << "size of candidates after hill climbing = " << candidates.size() << endl;
 
-    // check conflicts
-    sort(ALL(candidates));
-    for (auto const & candidate : candidates) {
-        bool conflicted = false;
-        for (auto const & next_candidate : next_candidates) {
-            double delta1 = (reference_score - candidate.first) + (reference_score - next_candidate.first);
-            vector<point_t> junctions;
-            junctions.push_back(candidate.second);
-            junctions.push_back(next_candidate.second);
-            double delta2 = reference_score - compute_cost_of_spanning_tree_kruskal(cities, junctions, city_tree);
-            if (delta1 > delta2 - eps) {
-                conflicted = true;
-                break;
+    { // check conflicts
+        vector<point_t> junctions;
+        double score = reference_score;
+        for (auto const & candidate : candidates) {
+            point_t p = candidate.second;
+            junctions.push_back(p);
+            double next_score = compute_cost_of_spanning_tree_kruskal(cities, junctions, city_tree);
+            if (next_score < score) {
+                score = next_score;
+                next_candidates.push_back(candidate);
+            } else {
+                junctions.pop_back();
             }
         }
-        if (conflicted) continue;
-        next_candidates.push_back(candidate);
+        candidates.clear();
+        candidates.swap(next_candidates);
+        cerr << "size of candidates after removing conflicts = " << candidates.size() << endl;
     }
-    candidates.clear();
-    candidates.swap(next_candidates);
-    cerr << "size of candidates after removing conflicts = " << candidates.size() << endl;
 
     // construct the result
     vector<point_t> junctions;
@@ -270,6 +259,7 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
         }
         int k = min_element(ALL(modified_scores)) - modified_scores.begin();
         if (k == 0) continue;
+        cerr << "use " << p << " (k = " << k << ", expected gain = " << reference_score - modified_scores[k] << ")" << endl;
         junctions.push_back(p);
         REP (i, k - 1) {
             int ny = max(0, min(S, p.y + dy[i]));

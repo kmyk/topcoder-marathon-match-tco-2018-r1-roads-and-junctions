@@ -270,6 +270,7 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
 
     sort(ALL(junctions));
     junctions.erase(unique(ALL(junctions)), junctions.end());
+    junctions.erase(remove_if(ALL(junctions), [&](point_t p) { return count(ALL(cities), p); }), junctions.end());
 
 #ifdef LOCAL
     double local_elapsed = rdtsc();

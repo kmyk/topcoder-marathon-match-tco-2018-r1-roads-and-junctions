@@ -271,6 +271,27 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
     sort(ALL(junctions));
     junctions.erase(unique(ALL(junctions)), junctions.end());
 
+#ifdef LOCAL
+    double local_elapsed = rdtsc();
+    vector<double> samples; {
+        default_random_engine gen;
+        int NJ = junctions.size();
+        REP (iteration, 1000) {
+            vector<point_t> constructed_junctions;
+            for (point_t p : junctions) {
+                if (not bernoulli_distribution(failure_probability)(gen)) {
+                    constructed_junctions.push_back(p);
+                }
+            }
+            double score = NJ * junction_cost + compute_cost_of_spanning_tree_kruskal(cities, constructed_junctions, city_tree);
+            samples.push_back(reference_score - score);
+        }
+        sort(ALL(samples));
+    }
+    double average_reference_delta = accumulate(ALL(samples), 0.0) / samples.size();
+    local_elapsed = rdtsc() - local_elapsed;
+#endif
+
     // solve roads
     auto cont = [=](vector<bool> const & junction_status) {
         return with_junctions_status(NC, junctions, junction_status, [&](vector<point_t> const & junctions) {
@@ -292,8 +313,14 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
 
             // print debug info
             double elapsed = rdtsc() - clock_begin;
+            auto format_float = [&](double x) { return round(x * 1e8) * 1e-8 + 0; };  // NOTE: "+ 0" removes negative zeros
             cerr << "score = " << score << endl;
-            cerr << "reference delta = " << reference_score - score << endl;
+            cerr << "NJ = " << NJ << endl;
+            cerr << "raw reference delta = " << reference_score - score << endl;
+#ifdef LOCAL
+            cerr << "average reference delta = " << format_float(average_reference_delta) << endl;
+            elapsed -= local_elapsed;
+#endif
             cerr << "elapsed = " << elapsed << endl;
 #ifdef LOCAL
             cerr << "{\"seed\":" << seed
@@ -304,9 +331,15 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
                  << ",\"reference_score\":" << reference_score
                  << ",\"score\":" << score
                  << ",\"NJ\":" << NJ
-                 << ",\"reference_delta\":" << reference_score - score
+                 << ",\"raw_reference_delta\":" << reference_score - score
+                 << ",\"average_reference_delta\":" << format_float(average_reference_delta)
                  << ",\"elapsed\":" << elapsed
-                 << "}" << endl;
+                 ;
+            cerr << ",\"score_samples\":[";
+            REP (i, samples.size()) {
+                cerr << samples[i] << (i < (int)samples.size() - 1 ? ',' : ']');
+            }
+            cerr << "}" << endl;
 #endif
             return edges;
         });

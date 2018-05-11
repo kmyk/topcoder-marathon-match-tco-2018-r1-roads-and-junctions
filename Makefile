@@ -42,13 +42,13 @@ score: a.out tester.jar
 view =
 view:
 	stat ${view}
-	{ columns=$$(head -n 1 ${view} | grep -o '"\w\+"' | tr -d '"' | xargs) ; \
+	{ columns=$$(head -n 1 ${view} | grep -o '"\w\+"' | grep -v score_samples | tr -d '"' | xargs) ; \
 		echo $$columns | tr ' ' '\t' ; \
 		cat ${view} | jq -r '"\(.'"$$(echo $$columns | sed 's/ /)\\t\\(./g')"')"' ; } | \
 		sed 's/^/|,/ ; s/\t/,|,/g ; s/$$/,|/' | \
 		column -t -s , | \
 		sed '1 { p ; s/[^|]/-/g }'
-	echo average of reference delta = $$(cat ${view} | jq --slurp '[ .[] | .reference_delta ] | add / length')
+	echo average of average reference delta = $$(cat ${view} | jq --slurp '[ .[] | .average_reference_delta ] | add / length')
 
 plot-gradient:
 	${CXX} ${CXXFLAGS} plot-gradient.cpp -o plot-gradient.bin

@@ -798,6 +798,12 @@ Angel Beats!の残りを見た。
 結果として高々ひとつの交差点しか設置を試みないようになっており、しかし最良のものであるため一応は正の点が出てしまっていた。
 これを修正すると干渉判定が雑すぎるがゆえに点数が悪化する。
 コードを理解せず出力だけ見て雰囲気で書いていたのがよく分かる。
+発見の決め手はあのplotだったのでやはり手を動かして可視化するのは大事ですね。
+下図1枚目が修正前、3枚目がplotであり交差点の数が合わない。2枚目が修正後でこちらはよく対応が取れている。
+
+1.  ![10.vis.d2ccba14f97246981423b74a695e65e9046dafa3.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/10.vis.d2ccba14f97246981423b74a695e65e9046dafa3.png?token=ACGd-MDCsYiIOu_xsk89UpXXfTqVh2pjks5a_zvLwA%3D%3D)
+1.  ![10.vis.2d54d52e7137702eac2fd6011a1d3cbf3893729b.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/10.vis.2d54d52e7137702eac2fd6011a1d3cbf3893729b.png?token=ACGd-PL4C2wJOvD2X3-rPooNMiYcejHaks5a_zvNwA%3D%3D)
+1.  ![10.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/10.png?token=ACGd-G4BXSG1pfja9YaJwMdT9pQ2ulkyks5a_zvQwA%3D%3D)
 
 <details>
 <summary>順位表 2018年  5月 12日 土曜日 05:30:24 JST 2d54d52e7137702eac2fd6011a1d3cbf3893729b</summary>

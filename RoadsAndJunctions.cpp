@@ -20,6 +20,29 @@ inline double rdtsc() { // in seconds
 }
 constexpr int TLE = 10; // sec
 
+class xor_shift_128 {
+public:
+    typedef uint32_t result_type;
+    xor_shift_128(uint32_t seed) {
+        set_seed(seed);
+    }
+    void set_seed(uint32_t seed) {
+        a = seed = 1812433253u * (seed ^ (seed >> 30));
+        b = seed = 1812433253u * (seed ^ (seed >> 30)) + 1;
+        c = seed = 1812433253u * (seed ^ (seed >> 30)) + 2;
+        d = seed = 1812433253u * (seed ^ (seed >> 30)) + 3;
+    }
+    uint32_t operator() () {
+        uint32_t t = (a ^ (a << 11));
+        a = b; b = c; c = d;
+        return d = (d ^ (d >> 19)) ^ (t ^ (t >> 8));
+    }
+    static constexpr uint32_t max() { return numeric_limits<result_type>::max(); }
+    static constexpr uint32_t min() { return numeric_limits<result_type>::min(); }
+private:
+    uint32_t a, b, c, d;
+};
+
 struct union_find_tree {
     vector<int> data;
     union_find_tree() = default;
@@ -144,9 +167,15 @@ double compute_cost_of_spanning_tree_kruskal(vector<point_t> const & cities, vec
     return acc;
 }
 
+const int neighborhood4_y[] = { 0, -1,  0, 1 };
+const int neighborhood4_x[] = { 1,  0, -1, 0 };
+const int neighborhood8_y[] = { 0, -1, -1, -1, 0, 1, 1, 1 };
+const int neighborhood8_x[] = { 1, 1, 0, -1, -1, -1, 0, 1 };
+
 constexpr double eps = 1e-8;
 pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> > solve(int S, vector<point_t> const & cities, double junction_cost, double failure_probability) {
     double clock_begin = rdtsc();
+    xor_shift_128 gen(42);
 
     // prepare
     int NC = cities.size();
@@ -177,10 +206,17 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
         vector<point_t> junctions(1, p);
         return memo[p] = compute_cost_of_spanning_tree_kruskal(cities, junctions, city_tree);
     };
-    REP (i, NC) REP (j, i) REP (k, j) {
-        int y = round((cities[i].y + cities[j].y + cities[k].y) / 3.0);
-        int x = round((cities[i].x + cities[j].x + cities[k].x) / 3.0);
+    REP (a, NC) REP (b, a) REP (c, b) {
+        int y = round((cities[a].y + cities[b].y + cities[c].y) / 3.0);
+        int x = round((cities[a].x + cities[b].x + cities[c].x) / 3.0);
         compute_cost_of_spanning_tree_memo((point_t) { y, x });
+    }
+    REP (a, NC) {
+        REP3 (y, max(0, cities[a].y - 1), min(S, cities[a].y + 1) + 1) {
+            REP3 (x, max(0, cities[a].x - 1), min(S, cities[a].x + 1) + 1) {
+                compute_cost_of_spanning_tree_memo((point_t) { y, x });
+            }
+        }
     }
     vector<pair<double, point_t> > candidates;
     for (auto const & it : memo) {
@@ -192,43 +228,46 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
     sort(ALL(candidates));
     cerr << "size of candidates for hill climbing = " << candidates.size() << endl;
 
-    // hill climbing to filter candidates
-    vector<pair<double, point_t> > next_candidates;
-    const int dy[] = { -1, 1, 0, 0 };
-    const int dx[] = { 0, 0, 1, -1 };
-    for (auto const & candidate : candidates) {
-        double score; point_t p; tie(score, p) = candidate;
-        while (true) {
-            bool found = false;
-            REP (i, 4) {
-                int ny = max(0, min(S, p.y + dy[i]));
-                int nx = max(0, min(S, p.x + dx[i]));
-                double nscore = compute_cost_of_spanning_tree_memo((point_t) { ny, nx });
-                if (nscore < score) {
-                    found = true;
-                    score = nscore;
-                    p.y = ny;
-                    p.x = nx;
+    { // hill climbing to filter candidates
+        vector<pair<double, point_t> > next_candidates;
+        array<int, 8> order;
+        iota(ALL(order), 0);
+        for (auto const & candidate : candidates) {
+            double score; point_t p; tie(score, p) = candidate;
+            while (true) {
+                bool found = false;
+                shuffle(ALL(order), gen);
+                for (int i : order) {
+                    int ny = max(0, min(S, p.y + neighborhood8_y[i]));
+                    int nx = max(0, min(S, p.x + neighborhood8_x[i]));
+                    point_t np = { ny, nx };
+                    double nscore = compute_cost_of_spanning_tree_memo(np);
+                    if (nscore < score) {
+                        found = true;
+                        score = nscore;
+                        p = np;
+                        break;
+                    }
+                }
+                if (not found) {
                     break;
                 }
             }
-            if (not found) {
-                break;
+            double modified_score_1 = (1 - failure_probability) * score + failure_probability * reference_score + junction_cost;
+            if (modified_score_1 > reference_score) {
+                continue;
             }
+            next_candidates.emplace_back(score, p);
         }
-        double modified_score_1 = (1 - failure_probability) * score + failure_probability * reference_score + junction_cost;
-        if (modified_score_1 > reference_score) {
-            continue;
-        }
-        next_candidates.emplace_back(score, p);
+        candidates.clear();
+        candidates.swap(next_candidates);
+        sort(ALL(candidates));
+        candidates.erase(unique(ALL(candidates)), candidates.end());  // while it contains floating points, it's OK since they are memoized value
+        cerr << "size of candidates after hill climbing = " << candidates.size() << endl;
     }
-    candidates.clear();
-    candidates.swap(next_candidates);
-    sort(ALL(candidates));
-    candidates.erase(unique(ALL(candidates)), candidates.end());  // while it contains floating points, it's OK since they are memoized value
-    cerr << "size of candidates after hill climbing = " << candidates.size() << endl;
 
     { // check conflicts
+        vector<pair<double, point_t> > next_candidates;
         vector<point_t> junctions;
         double score = reference_score;
         for (auto const & candidate : candidates) {
@@ -295,7 +334,6 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
 #ifdef LOCAL
     double local_elapsed = rdtsc();
     vector<double> samples; {
-        default_random_engine gen;
         int NJ = junctions.size();
         REP (iteration, 1000) {
             vector<point_t> constructed_junctions;

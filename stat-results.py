@@ -32,6 +32,7 @@ def main():
     elif args.what == 'summary':
         print('average of average reference delta =', df['average_reference_delta'].mean())
         print('median of average reference delta =', df['average_reference_delta'].median())
+        print('minimum of average reference delta =', df['average_reference_delta'].min())
     elif args.what.endswith('plot'):
         if args.what == 'pairplot':
             sns.pairplot(df, vars='S NC junction_cost failure_probability reference_score NJ average_reference_delta'.split())

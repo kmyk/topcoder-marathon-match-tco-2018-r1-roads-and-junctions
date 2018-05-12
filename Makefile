@@ -33,10 +33,6 @@ timestamp := $(shell date +%s)
 score: a.out tester.jar
 	-mkdir log
 	cp a.out log/${timestamp}.bin
-	for seed in $$(seq 1 100) ; do \
-		java -jar tester.jar -exec ./log/${timestamp}.bin -debug -seed $$seed | \
-			tee /dev/stderr | \
-			grep '{"seed":' >> log/${timestamp}.json ; \
-	done
+	parallel --jobs 50% -- 'java -jar tester.jar -exec ./log/${timestamp}.bin -debug -seed {} | tee /dev/stderr | grep '\''{"seed":'\'' >> log/${timestamp}.json' ::: $$(seq 2000)
 	cat log/${timestamp}.json | python3 stat-results.py table
 	cat log/${timestamp}.json | python3 stat-results.py summary

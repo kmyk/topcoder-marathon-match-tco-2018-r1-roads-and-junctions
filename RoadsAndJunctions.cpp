@@ -335,7 +335,7 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
     double local_elapsed = rdtsc();
     vector<double> samples; {
         int NJ = junctions.size();
-        REP (iteration, 1000) {
+        REP (iteration, 10000) {
             vector<point_t> constructed_junctions;
             for (point_t p : junctions) {
                 if (not bernoulli_distribution(failure_probability)(gen)) {
@@ -377,6 +377,7 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
             cerr << "NJ = " << NJ << endl;
             cerr << "raw reference delta = " << reference_score - score << endl;
 #ifdef LOCAL
+            cerr << "average score = " << reference_score - average_reference_delta << endl;
             cerr << "average reference delta = " << format_float(average_reference_delta) << endl;
             elapsed -= local_elapsed;
 #endif
@@ -391,13 +392,22 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
                  << ",\"score\":" << score
                  << ",\"NJ\":" << NJ
                  << ",\"raw_reference_delta\":" << reference_score - score
+                 << ",\"average_score\":" << score - average_reference_delta
                  << ",\"average_reference_delta\":" << format_float(average_reference_delta)
                  << ",\"elapsed\":" << elapsed
                  ;
-            cerr << ",\"score_samples\":[";
-            REP (i, samples.size()) {
-                cerr << samples[i] << (i < (int)samples.size() - 1 ? ',' : ']');
+            cerr << ",\"delta_samples\":[";
+            map<double, int> sample_count;
+            for (double sample : samples) {
+                sample_count[sample] += 1;
             }
+            bool is_first = true;
+            for (auto it : sample_count) {
+                if (not is_first) cerr << ",";
+                is_first = false;
+                cerr << "[" << it.first << "," << it.second << "]";
+            }
+            cerr << "]";
             cerr << "}" << endl;
 #endif
             return edges;

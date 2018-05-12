@@ -25,7 +25,7 @@ def main():
 
     # plot
     if args.what == 'table':
-        print(tabulate(df.drop('score_samples', axis=1), headers='keys', showindex='always', tablefmt='orgtbl'))
+        print(tabulate(df.drop('delta_samples', axis=1), headers='keys', showindex='always', tablefmt='orgtbl'))
     elif args.what == 'summary':
         print('average of average reference delta =', df['average_reference_delta'].mean())
         print('median of average reference delta =', df['average_reference_delta'].median())
@@ -37,9 +37,9 @@ def main():
             if args.seed is None:
                 parser.error('the following arguments are required: --seed')
             try:
-                sns.distplot(df.ix[args.seed]['score_samples'])
+                sns.distplot(df.ix[args.seed]['delta_samples'])
             except np.linalg.linalg.LinAlgError:
-                sns.distplot(df.ix[args.seed]['score_samples'], kde=False)
+                sns.distplot(df.ix[args.seed]['delta_samples'], kde=False)
         else:
             assert False
         if args.save:

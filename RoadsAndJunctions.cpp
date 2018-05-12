@@ -265,23 +265,82 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
         cerr << "size of candidates after hill climbing = " << candidates.size() << endl;
     }
 
-    { // check conflicts
-        vector<pair<double, point_t> > next_candidates;
-        vector<point_t> junctions;
-        double score = reference_score;
-        for (auto const & candidate : candidates) {
-            point_t p = candidate.second;
-            junctions.push_back(p);
-            double next_score = compute_cost_of_spanning_tree_kruskal(cities, junctions, city_tree);
-            if (next_score < score) {
+    { // remove not good points
+        auto it = lower_bound(ALL(candidates), make_pair(reference_score - junction_cost, (point_t) { -1, -1 }));
+        candidates.erase(it, candidates.end());
+        cerr << "size of candidates after simple pruning = " << candidates.size() << endl;
+    }
+
+    // check conflicts with simulated annealing
+    if (not candidates.empty()) {
+        // prepare
+        int NJ = candidates.size();
+        auto pack = [&](vector<char> const & mask) {
+            string key;
+            REP (b, (NJ + 7) / 8) {
+                uint8_t c = 0;
+                REP (i, 8) {
+                    int j = b * 8 + i;
+                    if (j < NJ and mask[j]) {
+                        c |= 1u << i;
+                    }
+                }
+                key.push_back(c);
+            }
+            return key;
+        };
+        unordered_map<string, double> memo;
+        auto compute_cost_of_spanning_tree_mask = [&](vector<char> const & mask) {
+            string key = pack(mask);
+            if (memo.count(key)) return memo[key];
+            vector<point_t> junctions;
+            REP (i, NJ) if (mask[i]) {
+                junctions.push_back(candidates[i].second);
+            }
+            return memo[key] = compute_cost_of_spanning_tree_kruskal(cities, junctions, city_tree);
+        };
+        vector<char> mask(NJ, true);
+        double score = compute_cost_of_spanning_tree_mask(mask) + junction_cost * NJ;
+        vector<char> result = mask;
+        double highscore = score;
+
+        // run iterations
+        int iteration = 0;
+        double sa_clock_begin = rdtsc();
+        double sa_clock_end = min(clock_begin + TLE * 0.8, sa_clock_begin + TLE * 0.2 * NJ);
+        double temperature = 1;
+        for (; ; ++ iteration) {
+            if (iteration % 10 == 0) {
+                double t = rdtsc();
+                if (t > sa_clock_end) break;
+                temperature = 1 - (t - sa_clock_begin) / (sa_clock_end - sa_clock_begin);
+            }
+            int i = uniform_int_distribution<int>(0, NJ - 1)(gen);
+            mask[i] = not mask[i];
+            double next_score = compute_cost_of_spanning_tree_mask(mask) + count(ALL(mask), true) * junction_cost;
+            double delta = score - next_score;
+            if (next_score < score + eps or bernoulli_distribution(exp(0.1 * delta / temperature))(gen)) {
                 score = next_score;
-                next_candidates.push_back(candidate);
+                if (score < highscore) {
+                    highscore = score;
+                    result = mask;
+                    cerr << "simulated annealing: ";
+                    REP (i, NJ) cerr << int(mask[i]);
+                    cerr << " " << highscore << endl;
+                }
             } else {
-                junctions.pop_back();
+                mask[i] = not mask[i];
             }
         }
+
+        // make the result
+        cerr << "simulated annealing: iteration = " << iteration << endl;
+        vector<pair<double, point_t> > next_candidates;
+        REP (i, NJ) if (mask[i]) {
+            next_candidates.push_back(candidates[i]);
+        }
         candidates.swap(next_candidates);
-        cerr << "size of candidates after removing conflicts = " << candidates.size() << endl;
+        cerr << "size of candidates after simulated annealing = " << candidates.size() << endl;
     }
 
     // construct the result

@@ -11,7 +11,6 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('what', choices='table summary pairplot distplot')
     parser.add_argument('file', nargs='?', default='/dev/stdin')
-    parser.add_argument('--limit', type=int)
     parser.add_argument('--seed', type=int)
     parser.add_argument('--save')
     args = parser.parse_args()
@@ -20,8 +19,6 @@ def main():
     df = []
     with open(args.file) as fh:
         for i, line in enumerate(fh):
-            if args.limit is not None and i >= args.limit:
-                break
             df += [ json.loads(line) ]
     df = pd.DataFrame(df, columns=df[0].keys())
     df.set_index('seed', inplace=True)

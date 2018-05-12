@@ -173,10 +173,10 @@ Molle-Richter-Rossmanith法というのもあるらしいが方向性は変わ�
 愚直に三角形を総当たりしてもよいが、時間もいくらかあるしDelaunay三角形分割とかをしたい気もする。
 乱択でわりと簡単らしい (出典: [ドロネー三角形分割, shiatsumat - SlideShare](https://www.slideshare.net/Kinokkory/ss-25736696)) しまだ書いたことないのでやりたい。
 
--   ![1.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/1.png?token=ACGd-LRp7RBarKRCwgXHweC6Ohr9eqJnks5a_YPxwA%3D%3D)
--   ![2.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/2.png?token=ACGd-KsY1jXnMMVqqDRhBeQWVNu5jVoZks5a_YTwwA%3D%3D)
--   ![3.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/3.png?token=ACGd-GuGYaZ02Kn62-9IbtnFqvJ7Zp3Nks5a_YTiwA%3D%3D)
--   ![2.3d.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/2.3d.png?token=ACGd-E2xhjyMxU9Riv-omjdmCp3IXmSpks5a_YT7wA%3D%3D)
+-   ![grad.1.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/cbd1479f4b52cc2a2b71036a7ad3f7b26376ee68/images/grad.1.png?token=ACGd-Pwi2rgANkbJkgMu5CWHWdbQ8fo4ks5a_2tYwA%3D%3D)
+-   ![grad.2.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/grad.2.png?token=ACGd-FdiZxoabEv2ttq-wQGI4EbBjRVeks5a_2uLwA%3D%3D)
+-   ![grad.3.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/grad.3.png?token=ACGd-KPyxHRT_zSCnhuyFc7g6J03XuH1ks5a_2uNwA%3D%3D)
+-   ![grad3d.2.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/grad3d.2.png?token=ACGd-CJlJzwqbUMe8hRtRPkH9eF1Aoz9ks5a_2ufwA%3D%3D)
 
 ### 5/11
 
@@ -801,9 +801,9 @@ Angel Beats!の残りを見た。
 発見の決め手はあのplotだったのでやはり手を動かして可視化するのは大事ですね。
 下図1枚目が修正前、3枚目がplotであり交差点の数が合わない。2枚目が修正後でこちらはよく対応が取れている。
 
-1.  ![10.vis.d2ccba14f97246981423b74a695e65e9046dafa3.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/10.vis.d2ccba14f97246981423b74a695e65e9046dafa3.png?token=ACGd-MDCsYiIOu_xsk89UpXXfTqVh2pjks5a_zvLwA%3D%3D)
-1.  ![10.vis.2d54d52e7137702eac2fd6011a1d3cbf3893729b.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/10.vis.2d54d52e7137702eac2fd6011a1d3cbf3893729b.png?token=ACGd-PL4C2wJOvD2X3-rPooNMiYcejHaks5a_zvNwA%3D%3D)
-1.  ![10.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/10.png?token=ACGd-G4BXSG1pfja9YaJwMdT9pQ2ulkyks5a_zvQwA%3D%3D)
+1.  ![vis.10.d2ccba14f97246981423b74a695e65e9046dafa3.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/vis.10.d2ccba14f97246981423b74a695e65e9046dafa3.png?token=ACGd-B9GvZUVN4q1BUkuxsXtPdELjUVHks5a_2vGwA%3D%3D)
+1.  ![vis.10.2d54d52e7137702eac2fd6011a1d3cbf3893729b.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/vis.10.2d54d52e7137702eac2fd6011a1d3cbf3893729b.png?token=ACGd-K7SGui_OmmOhLAOJMVNBIYnZe9-ks5a_2vIwA%3D%3D)
+1.  ![grad.10.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/grad.10.png?token=ACGd-JP-b_KLKBLHtoRMj40evz8_TG2Eks5a_2vawA%3D%3D)
 
 <details>
 <summary>順位表 2018年  5月 12日 土曜日 05:30:24 JST 2d54d52e7137702eac2fd6011a1d3cbf3893729b</summary>

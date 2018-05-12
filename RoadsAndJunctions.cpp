@@ -251,20 +251,34 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
     // construct the result
     vector<point_t> junctions;
     for (auto const & candidate : candidates) {
-        double score; point_t p; tie(score, p) = candidate;
+        point_t p = candidate.second;
+
+        // sort neighborhoods with score
+        vector<pair<double, point_t> > neighborhoods;
+        constexpr int radius = 3;
+        REP3 (ny, max(0, p.y - radius), min(S, p.y + radius) + 1) {
+            REP3 (nx, max(0, p.x - radius), min(S, p.x + radius) + 1) {
+                double score = compute_spanning_tree_with_junction(ny, nx);
+                neighborhoods.emplace_back(score, (point_t) { ny, nx });
+            }
+        }
+        sort(ALL(neighborhoods));
+
+        // choose k
         vector<double> modified_scores;
-        REP (k, 5 + 1) {  // 5 = 1 + 4 neighborhoods
+        REP (k, neighborhoods.size()) {
             double p = pow(failure_probability, k);
-            modified_scores.push_back((1 - p) * score + p * reference_score + k * junction_cost);
+            double score = neighborhoods[k].first;  // NOTE: this is an approximation
+            double connection_cost = 0.1 * max(0, k - 1);  // NOTE: this is also an approximation
+            modified_scores.push_back((1 - p) * score + p * reference_score + k * junction_cost + connection_cost);
         }
         int k = min_element(ALL(modified_scores)) - modified_scores.begin();
         if (k == 0) continue;
         cerr << "use " << p << " (k = " << k << ", expected gain = " << reference_score - modified_scores[k] << ")" << endl;
-        junctions.push_back(p);
-        REP (i, k - 1) {
-            int ny = max(0, min(S, p.y + dy[i]));
-            int nx = max(0, min(S, p.x + dx[i]));
-            junctions.push_back((point_t) { ny, nx });
+
+        // use best k neighborhoods
+        REP (i, k) {
+            junctions.push_back(neighborhoods[i].second);
         }
     }
 

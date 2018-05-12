@@ -172,16 +172,15 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
 
     // build a junction to find candidates for hill climbing
     map<point_t, double> memo;
-    auto compute_spanning_tree_with_junction = [&](int y, int x) {
-        point_t key = { y, x };
-        if (memo.count(key)) return memo[key];
-        vector<point_t> junctions(1, (point_t) { y, x });
-        return memo[key] = compute_cost_of_spanning_tree_kruskal(cities, junctions, city_tree);
+    auto compute_cost_of_spanning_tree_memo = [&](point_t p) {
+        if (memo.count(p)) return memo[p];
+        vector<point_t> junctions(1, p);
+        return memo[p] = compute_cost_of_spanning_tree_kruskal(cities, junctions, city_tree);
     };
     REP (i, NC) REP (j, i) REP (k, j) {
         int y = round((cities[i].y + cities[j].y + cities[k].y) / 3.0);
         int x = round((cities[i].x + cities[j].x + cities[k].x) / 3.0);
-        compute_spanning_tree_with_junction(y, x);
+        compute_cost_of_spanning_tree_memo((point_t) { y, x });
     }
     vector<pair<double, point_t> > candidates;
     for (auto const & it : memo) {
@@ -204,7 +203,7 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
             REP (i, 4) {
                 int ny = max(0, min(S, p.y + dy[i]));
                 int nx = max(0, min(S, p.x + dx[i]));
-                double nscore = compute_spanning_tree_with_junction(ny, nx);
+                double nscore = compute_cost_of_spanning_tree_memo((point_t) { ny, nx });
                 if (nscore < score) {
                     found = true;
                     score = nscore;
@@ -258,8 +257,9 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
         constexpr int radius = 3;
         REP3 (ny, max(0, p.y - radius), min(S, p.y + radius) + 1) {
             REP3 (nx, max(0, p.x - radius), min(S, p.x + radius) + 1) {
-                double score = compute_spanning_tree_with_junction(ny, nx);
-                neighborhoods.emplace_back(score, (point_t) { ny, nx });
+                point_t np = { ny, nx };
+                double score = compute_cost_of_spanning_tree_memo(np);
+                neighborhoods.emplace_back(score, np);
             }
         }
         sort(ALL(neighborhoods));

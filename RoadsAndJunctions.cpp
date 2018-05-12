@@ -259,7 +259,6 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
             }
             next_candidates.emplace_back(score, p);
         }
-        candidates.clear();
         candidates.swap(next_candidates);
         sort(ALL(candidates));
         candidates.erase(unique(ALL(candidates)), candidates.end());  // while it contains floating points, it's OK since they are memoized value
@@ -281,7 +280,6 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
                 junctions.pop_back();
             }
         }
-        candidates.clear();
         candidates.swap(next_candidates);
         cerr << "size of candidates after removing conflicts = " << candidates.size() << endl;
     }

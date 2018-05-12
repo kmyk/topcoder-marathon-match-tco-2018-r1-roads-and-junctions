@@ -1164,3 +1164,22 @@ Score = -1.0
 ちゃんと細部の調整が必要。
 でもまあ後回し。
 どちらかというと細かいバグの排除のために10000単位で走らせてみるべきかも。 どうせ軽いし。
+
+いろいろplotした。
+`de28db851d58b9a233d5f496989a9842053badc2` 時点のもの。
+次の1枚目はpairplot。 (S, reference score), (NJ, average reference delta) などに相関は見られるが、これらは自明。
+MM100のときの 面積 - 得点 の相関のような役に立つものはなさそう。
+2000行ぐらい用意したのにあまり投げ込むと潰れて読めないので200行のみ使用した。
+2,3,4,5枚目はdistplot。 それぞれ seed = 2,3,4,10 での交差点の建設計画に対する得点の分布図。
+NJ が大きくても正規分布ぽくない変な形になることがあるぽい。
+対数正規分布、Weibull分布、Erlang分布、gamma分布などいくつか見てみたがどれに近いかすら分からない。
+そしてどれに近いか分かれば何が分かるのかも分からない。
+面白いのだけどでもこれを見ても何もすることない。 困る。
+画像が増えたのでpathをいじったらこのmarkdownに貼ってた古い画像が壊れた。
+commit hashを含めたfull pathで書かないとだめっぽい。 でも面倒なので適当に修正された。
+
+1.  ![pairplot.200.de28db851d58b9a233d5f496989a9842053badc2.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/pairplot.200.de28db851d58b9a233d5f496989a9842053badc2.png?token=ACGd-L9kvMoFMocPOKeJ5QInXkmXU0FQks5a_2wPwA%3D%3D)
+1.  ![distplot.2.de28db851d58b9a233d5f496989a9842053badc2.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/distplot.2.de28db851d58b9a233d5f496989a9842053badc2.png?token=ACGd-O_Yz_2s8rJtpPPH2XI7FKBpUQhsks5a_2_YwA%3D%3D)
+1.  ![distplot.3.de28db851d58b9a233d5f496989a9842053badc2.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/distplot.3.de28db851d58b9a233d5f496989a9842053badc2.png?token=ACGd-GJxJ7iX_7ztjYM9zYh64mmLAugkks5a_2yLwA%3D%3D)
+1.  ![distplot.4.de28db851d58b9a233d5f496989a9842053badc2.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/distplot.4.de28db851d58b9a233d5f496989a9842053badc2.png?token=ACGd-B3rA1k0mMN4tEJ142JQ7mrzI7NHks5a_2yNwA%3D%3D)
+1.  ![distplot.10.de28db851d58b9a233d5f496989a9842053badc2.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/distplot.10.de28db851d58b9a233d5f496989a9842053badc2.png?token=ACGd-HZq41GxBxZeozcP2Iosk_ReJPeYks5a_2xuwA%3D%3D)

@@ -40,11 +40,3 @@ score: a.out tester.jar
 	done
 	cat log/${timestamp}.json | python3 stat-results.py table
 	cat log/${timestamp}.json | python3 stat-results.py summary
-
-plot-gradient:
-	${CXX} ${CXXFLAGS} plot-gradient.cpp -o plot-gradient.bin
-	for seed in $$(seq 1 100) ; do \
-		file test/$$seed.in ; \
-		N=1000 time ./plot-gradient.bin < test/$$seed.in | python3 plot-gradient.py test/$$seed.in /dev/stdin --save $$seed.png --no-frame ; \
-		file $$seed.png ; \
-	done

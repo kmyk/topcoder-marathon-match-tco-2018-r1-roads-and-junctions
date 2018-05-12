@@ -20,7 +20,11 @@ class MidpointNormalize(Normalize):
 
 def main():
     import argparse
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(usage='''
+    $ $CXX $CXXFLAGS plot-gradient.cpp -o plot-gradient.bin
+    $ file test/$seed.in
+    $ N=1000 time ./plot-gradient.bin < test/$seed.in | python3 plot-gradient.py test/$seed.in /dev/stdin --save $seed.png --no-frame
+''')
     parser.add_argument('input')
     parser.add_argument('data')
     parser.add_argument('--3d', action='store_true', dest='three')

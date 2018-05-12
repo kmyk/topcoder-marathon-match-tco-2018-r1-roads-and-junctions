@@ -32,23 +32,14 @@ standings:
 timestamp := $(shell date +%s)
 score: a.out tester.jar
 	-mkdir log
+	cp a.out log/${timestamp}.bin
 	for seed in $$(seq 1 100) ; do \
-		java -jar tester.jar -exec ./a.out -debug -seed $$seed | \
+		java -jar tester.jar -exec ./log/${timestamp}.bin -debug -seed $$seed | \
 			tee /dev/stderr | \
 			grep '{"seed":' >> log/${timestamp}.json ; \
 	done
-	make view view=log/${timestamp}.json
-
-view =
-view:
-	stat ${view}
-	{ columns=$$(head -n 1 ${view} | grep -o '"\w\+"' | grep -v score_samples | tr -d '"' | xargs) ; \
-		echo $$columns | tr ' ' '\t' ; \
-		cat ${view} | jq -r '"\(.'"$$(echo $$columns | sed 's/ /)\\t\\(./g')"')"' ; } | \
-		sed 's/^/|,/ ; s/\t/,|,/g ; s/$$/,|/' | \
-		column -t -s , | \
-		sed '1 { p ; s/[^|]/-/g }'
-	echo average of average reference delta = $$(cat ${view} | jq --slurp '[ .[] | .average_reference_delta ] | add / length')
+	cat log/${timestamp}.json | python3 stat-results.py table
+	cat log/${timestamp}.json | python3 stat-results.py summary
 
 plot-gradient:
 	${CXX} ${CXXFLAGS} plot-gradient.cpp -o plot-gradient.bin

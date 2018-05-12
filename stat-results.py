@@ -4,11 +4,12 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import json
+from tabulate import tabulate  # https://pypi.org/project/tabulate/
 
 def main():
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('what', choices='pairplot distplot')
+    parser.add_argument('what', choices='table summary pairplot distplot')
     parser.add_argument('file', nargs='?', default='/dev/stdin')
     parser.add_argument('--limit', type=int)
     parser.add_argument('--seed', type=int)
@@ -26,24 +27,30 @@ def main():
     df.set_index('seed', inplace=True)
 
     # plot
-    if args.what == 'pairplot':
-        sns.pairplot(df, vars='S NC junction_cost failure_probability reference_score NJ average_reference_delta'.split())
-    elif args.what == 'distplot':
-        if args.seed is None:
-            parser.error('the following arguments are required: --seed')
-        try:
-            sns.distplot(df.ix[args.seed]['score_samples'])
-        except np.linalg.linalg.LinAlgError:
-            sns.distplot(df.ix[args.seed]['score_samples'], kde=False)
+    if args.what == 'table':
+        print(tabulate(df.drop('score_samples', axis=1), headers='keys', showindex='always', tablefmt='orgtbl'))
+    elif args.what == 'summary':
+        print('average of average reference delta =', df['average_reference_delta'].mean())
+        print('median of average reference delta =', df['average_reference_delta'].median())
+    elif args.what.endswith('plot'):
+        if args.what == 'pairplot':
+            sns.pairplot(df, vars='S NC junction_cost failure_probability reference_score NJ average_reference_delta'.split())
+        elif args.what == 'distplot':
+            if args.seed is None:
+                parser.error('the following arguments are required: --seed')
+            try:
+                sns.distplot(df.ix[args.seed]['score_samples'])
+            except np.linalg.linalg.LinAlgError:
+                sns.distplot(df.ix[args.seed]['score_samples'], kde=False)
+        else:
+            assert False
+        if args.save:
+            plt.savefig(args.save)
+        else:
+            plt.show()
     else:
         assert False
-    if args.save:
-        plt.savefig(args.save)
-    else:
-        plt.show()
 
-
-    # from IPython.core.debugger import Pdb ; Pdb().set_trace()
 
 if __name__ == '__main__':
     main()

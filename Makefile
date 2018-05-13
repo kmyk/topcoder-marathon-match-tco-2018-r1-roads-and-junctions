@@ -33,6 +33,7 @@ timestamp := $(shell date +%s)
 score: a.out tester.jar
 	-mkdir log
 	cp a.out log/${timestamp}.bin
-	parallel --jobs 50% -- 'java -jar tester.jar -exec ./log/${timestamp}.bin -debug -seed {} | tee /dev/stderr | grep '\''{"seed":'\'' >> log/${timestamp}.json' ::: $$(seq 2000)
+	echo 'data="$$(java -jar tester.jar -exec ./log/${timestamp}.bin -debug -seed $$1 | tee /dev/stderr | grep '\''{"seed":'\'')" ; flock log/${timestamp}.lock echo "$$data" >> log/${timestamp}.json' > log/${timestamp}.sh
+	parallel --jobs 50% -- bash log/${timestamp}.sh {} ::: $$(seq 100)
 	cat log/${timestamp}.json | python3 stat-results.py table
 	cat log/${timestamp}.json | python3 stat-results.py summary

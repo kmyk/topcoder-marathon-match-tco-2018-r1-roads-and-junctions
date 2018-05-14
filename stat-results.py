@@ -25,7 +25,11 @@ def main():
 
     # plot
     if args.what == 'table':
-        print(tabulate(df.drop('delta_samples', axis=1), headers='keys', showindex='always', tablefmt='orgtbl'))
+        s = tabulate(df.drop('delta_samples', axis=1), headers='keys', showindex='always', tablefmt='orgtbl')
+        lines = s.splitlines()
+        lines[1] = lines[1].replace('+', '|')
+        s = '\n'.join(lines)
+        print(s)
     elif args.what == 'summary':
         print('average of average reference delta =', df['average_reference_delta'].mean())
         print('median of average reference delta =', df['average_reference_delta'].median())

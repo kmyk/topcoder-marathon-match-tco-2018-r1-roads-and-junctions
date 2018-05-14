@@ -453,6 +453,7 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
                  << ",\"average_reference_delta\":" << format_float(average_reference_delta)
                  << ",\"elapsed\":" << elapsed
                  ;
+/*
             cerr << ",\"delta_samples\":[";
             map<double, int> sample_count;
             for (double sample : samples) {
@@ -465,6 +466,7 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
                 cerr << "[" << it.first << "," << it.second << "]";
             }
             cerr << "]";
+*/
             cerr << "}" << endl;
 #endif
             return edges;

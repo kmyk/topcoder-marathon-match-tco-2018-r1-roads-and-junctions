@@ -27,11 +27,12 @@ def main():
 
     # plot
     if args.what == 'table':
-        headers = list(df.columns)
+        headers = [ df.index.name ] + list(df.columns)
         for key in list(headers):
             if key.endswith('samples'):
                 df = df.drop(key, axis=1)
                 headers.remove(key)
+        df = df.sort_index()
         s = tabulate(df, headers=headers, showindex='always', tablefmt='orgtbl')
         lines = s.splitlines()
         lines[1] = lines[1].replace('+', '|')

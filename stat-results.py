@@ -27,7 +27,12 @@ def main():
 
     # plot
     if args.what == 'table':
-        s = tabulate(df.drop('delta_samples', axis=1), headers='keys', showindex='always', tablefmt='orgtbl')
+        headers = list(df.columns)
+        for key in list(headers):
+            if key.endswith('samples'):
+                df = df.drop(key, axis=1)
+                headers.remove(key)
+        s = tabulate(df, headers=headers, showindex='always', tablefmt='orgtbl')
         lines = s.splitlines()
         lines[1] = lines[1].replace('+', '|')
         s = '\n'.join(lines)

@@ -7,7 +7,7 @@ using namespace std;
 using namespace boost;
 
 int main() {
-    // input
+    // read input
     int S; cin >> S;
     int NC; cin >> NC; NC /= 2;
     vector<pair<int, int> > cities(NC);
@@ -17,6 +17,19 @@ int main() {
     }
     double junction_cost; cin >> junction_cost;
     double failure_probability; cin >> failure_probability;
+
+    // read output if exists
+    int NJ; cin >> NJ;
+    if (not cin) {
+        NJ = 0;
+    } else {
+        NJ /= 2;
+        REP (i, NJ) {
+            int x, y; cin >> x >> y;
+            ++ NC;
+            cities.emplace_back(x, y);
+        }
+    }
 
     // construct a graph
     typedef adjacency_matrix< undirectedS, no_property, property < edge_weight_t, double > > Graph;

@@ -27,6 +27,7 @@ def main():
 ''')
     parser.add_argument('input')
     parser.add_argument('data')
+    parser.add_argument('output', nargs='?')
     parser.add_argument('--3d', action='store_true', dest='three')
     parser.add_argument('--no-frame', action='store_true')
     parser.add_argument('--save')
@@ -51,6 +52,15 @@ def main():
             xs += [ int(x) ]
             ys += [ int(y) ]
             zs += [ reference_value - float(z) ]
+
+    if args.output is not None:
+        with open(args.output) as fh:
+            NJ = int(fh.readline()) // 2
+            junctions = []
+            for _ in range(NJ):
+                x = int(fh.readline())
+                y = int(fh.readline())
+                junctions += [ ( x, y ) ]
 
     # prepare
     if args.three:
@@ -93,6 +103,10 @@ def main():
         # plot cities
         for x, y in cities:
             plt.scatter(x, y, c='black')
+
+        # plot junctions
+        for x, y in junctions:
+            plt.scatter(x, y, c='white')
 
     if args.save:
         ax.get_xaxis().set_visible(False)

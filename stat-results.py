@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import collections
 import json
 from tabulate import tabulate  # https://pypi.org/project/tabulate/
 
@@ -18,8 +19,9 @@ def main():
     # load data from list-of-json format
     df = []
     with open(args.file) as fh:
+        decoder = json.JSONDecoder(object_pairs_hook=collections.OrderedDict)
         for i, line in enumerate(fh):
-            df += [ json.loads(line) ]
+            df += [ decoder.decode(line) ]
     df = pd.DataFrame(df, columns=df[0].keys())
     df.set_index('seed', inplace=True)
 

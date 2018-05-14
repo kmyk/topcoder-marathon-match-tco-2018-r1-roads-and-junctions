@@ -266,15 +266,80 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
     }
 
     { // remove not good points
-        auto it = lower_bound(ALL(candidates), make_pair(reference_score - junction_cost, (point_t) { -1, -1 }));
+        auto it = lower_bound(ALL(candidates), make_pair(reference_score + eps, (point_t) { -1, -1 }));
         candidates.erase(it, candidates.end());
         cerr << "size of candidates after simple pruning = " << candidates.size() << endl;
+    }
+
+    // find pairs of points which make better score
+    map<pair<point_t, point_t>, double> memo2;
+    auto compute_cost_of_spanning_tree_2 = [&](point_t p, point_t q) {
+        if (q < p) swap(p, q);
+        auto key = make_pair(p, q);
+        if (memo2.count(key)) return memo2[key];
+        vector<point_t> junctions({ p, q });
+        return memo2[key] = compute_cost_of_spanning_tree_kruskal(cities, junctions, city_tree);
+    };
+    vector<tuple<double, point_t, point_t> > pair_candidates; {
+        vector<pair<int, int> > conflicteds;
+        REP (i, candidates.size()) {
+            REP (j, i) {
+                double score_i; point_t p; tie(score_i, p) = candidates[i];
+                double score_j; point_t q; tie(score_j, q) = candidates[j];
+                double score = compute_cost_of_spanning_tree_2(p, q);
+                double expected_delta = (reference_score - score_i) + (reference_score - score_j);
+                double actual_delta = reference_score - score;
+                if (actual_delta < expected_delta - eps) {
+                    conflicteds.emplace_back(i, j);
+                }
+            }
+        }
+        cerr << "size of conflicted pairs = " << conflicteds.size() << endl;
+        array<int, 8> order;
+        iota(ALL(order), 0);
+        for (auto conflicted : conflicteds) {
+            int i, j; tie(i, j) = conflicted;
+            point_t p = candidates[i].second;
+            point_t q = candidates[j].second;
+            double score = compute_cost_of_spanning_tree_2(p, q);
+            while (true) {
+                shuffle(ALL(order), gen);
+                bool found = false;
+                for (int i : order) {
+                    point_t np = p;
+                    point_t nq = q;
+                    if (i >= 4) {
+                        i -= 4;
+                        swap(np, nq);
+                    }
+                    np.y += neighborhood4_y[i];
+                    np.x += neighborhood4_x[i];
+                    double next_score = compute_cost_of_spanning_tree_2(np, nq);
+                    if (next_score < score - eps) {
+                        p = np;
+                        q = nq;
+                        score = next_score;
+                        found = true;
+                    }
+                }
+                if (not found) break;
+            }
+            double score_1 = compute_cost_of_spanning_tree_memo(p);
+            double score_2 = compute_cost_of_spanning_tree_memo(q);
+            if (score < min(reference_score, score_1 + score_2 - reference_score) - eps) {
+                pair_candidates.emplace_back(score, p, q);
+            }
+        }
+        sort(ALL(pair_candidates));
+        cerr << "size of pair candidates = " << pair_candidates.size() << endl;
     }
 
     // check conflicts with simulated annealing
     if (not candidates.empty()) {
         // prepare
-        int NJ = candidates.size();
+        int NJ1 = candidates.size();
+        int NJ2 = pair_candidates.size();
+        int NJ = NJ1 + NJ2;
         auto pack = [&](vector<char> const & mask) {
             string key;
             REP (b, (NJ + 7) / 8) {
@@ -295,12 +360,17 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
             if (memo.count(key)) return memo[key];
             vector<point_t> junctions;
             REP (i, NJ) if (mask[i]) {
-                junctions.push_back(candidates[i].second);
+                if (i < NJ1) {
+                    junctions.push_back(candidates[i].second);
+                } else {
+                    junctions.push_back(get<1>(pair_candidates[i - NJ1]));
+                    junctions.push_back(get<2>(pair_candidates[i - NJ1]));
+                }
             }
             return memo[key] = compute_cost_of_spanning_tree_kruskal(cities, junctions, city_tree);
         };
-        vector<char> mask(NJ, true);
-        double score = compute_cost_of_spanning_tree_mask(mask) + junction_cost * NJ;
+        vector<char> mask(NJ);
+        double score = compute_cost_of_spanning_tree_mask(mask) + junction_cost * (NJ1 + 2 * NJ2);
         vector<char> result = mask;
         double highscore = score;
 
@@ -317,16 +387,20 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
             }
             int i = uniform_int_distribution<int>(0, NJ - 1)(gen);
             mask[i] = not mask[i];
-            double next_score = compute_cost_of_spanning_tree_mask(mask) + count(ALL(mask), true) * junction_cost;
+            double next_score = compute_cost_of_spanning_tree_mask(mask);
+            next_score += count(mask.begin(), mask.begin() + NJ1, true) * junction_cost;
+            next_score += count(mask.begin() + NJ1, mask.end(),   true) * junction_cost * 2;
             double delta = score - next_score;
-            if (next_score < score + eps or bernoulli_distribution(exp(0.1 * delta / temperature))(gen)) {
+            if (next_score < score + eps or bernoulli_distribution(exp(delta / temperature))(gen)) {
                 score = next_score;
                 if (score < highscore) {
                     highscore = score;
                     result = mask;
                     cerr << "simulated annealing: ";
-                    REP (i, NJ) cerr << int(mask[i]);
-                    cerr << " " << highscore << endl;
+                    REP (i, NJ1) cerr << int(mask[i]);
+                    cerr << '.';
+                    REP3 (i, NJ1, NJ) cerr << int(mask[i]);
+                    cerr << " " << reference_score - highscore << endl;
                 }
             } else {
                 mask[i] = not mask[i];
@@ -336,11 +410,16 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
         // make the result
         cerr << "simulated annealing: iteration = " << iteration << endl;
         vector<pair<double, point_t> > next_candidates;
-        REP (i, NJ) if (mask[i]) {
+        REP (i, NJ1) if (mask[i]) {
             next_candidates.push_back(candidates[i]);
         }
         candidates.swap(next_candidates);
-        cerr << "size of candidates after simulated annealing = " << candidates.size() << endl;
+        vector<tuple<double, point_t, point_t> > next_pair_candidates;
+        REP (i, NJ2) if (mask[NJ1 + i]) {
+            next_pair_candidates.push_back(pair_candidates[i]);
+        }
+        pair_candidates.swap(next_pair_candidates);
+        cerr << "size of candidates after simulated annealing = " << candidates.size() << " + " << pair_candidates.size() << endl;
     }
 
     // construct the result
@@ -375,6 +454,54 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
         // use best k neighborhoods
         REP (i, k) {
             junctions.push_back(neighborhoods[i].second);
+        }
+    }
+    for (auto const & candidate : pair_candidates) {
+        point_t p, q; tie(ignore, p, q) = candidate;
+
+        // sort neighborhoods with score
+        vector<tuple<double, point_t, point_t> > neighborhoods;
+        constexpr int radius = 2;
+        REP3 (npy, max(0, p.y - radius), min(S, p.y + radius) + 1) {
+            REP3 (npx, max(0, p.x - radius), min(S, p.x + radius) + 1) {
+                point_t np = { npy, npx };
+                REP3 (nqy, max(0, q.y - radius), min(S, q.y + radius) + 1) {
+                    REP3 (nqx, max(0, q.x - radius), min(S, q.x + radius) + 1) {
+                        point_t nq = { nqy, nqx };
+                        double score = compute_cost_of_spanning_tree_2(np, nq);
+                        neighborhoods.emplace_back(score, np, nq);
+                    }
+                }
+            }
+        }
+        sort(ALL(neighborhoods));
+
+        // choose k
+        vector<double> modified_scores;
+        REP (k, neighborhoods.size()) {
+            double p1 = pow(failure_probability, k);
+            double p = 1 - pow(1 - p1, 2);
+            double score = get<0>(neighborhoods[k]);
+            double connection_cost = 0.2 * max(0, k - 1);
+            modified_scores.push_back((1 - p) * score + p * reference_score + 2 * k * junction_cost + connection_cost);
+        }
+        int k = min_element(ALL(modified_scores)) - modified_scores.begin();
+        if (k == 0) continue;
+        cerr << "use " << p << " " << q << " (k = " << k << ", expected gain = " << reference_score - modified_scores[k] << ")" << endl;
+
+        // use best k neighborhoods
+        set<point_t> used_p;
+        set<point_t> used_q;
+        for (auto neighborhood : neighborhoods) {
+            point_t np, nq; tie(ignore, np, nq) = neighborhood;
+            if ((int)used_p.size() < k and not used_p.count(np)) {
+                used_p.insert(np);
+                junctions.push_back(np);
+            }
+            if ((int)used_q.size() < k and not used_q.count(nq)) {
+                used_q.insert(nq);
+                junctions.push_back(nq);
+            }
         }
     }
 

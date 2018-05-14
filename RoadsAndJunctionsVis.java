@@ -318,6 +318,18 @@ public class RoadsAndJunctionsVis {
         int[] ret = new int[N];
         for (int i = 0; i < N; i++)
             ret[i] = Integer.parseInt(br.readLine());
+
+        // save output data
+        sb = new StringBuffer();
+        sb.append(N).append("\n");
+        for (int i = 0; i < ret.length; ++i) {
+            sb.append(ret[i]).append("\n");
+        }
+        file = new File("test/" + seed + ".out");
+        FileWriter writer = new FileWriter(file);
+        writer.write(sb.toString());
+        writer.close();
+
         return ret;
     }
     // -----------------------------------------

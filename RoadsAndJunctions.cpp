@@ -391,7 +391,7 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
             next_score += count(mask.begin(), mask.begin() + NJ1, true) * junction_cost;
             next_score += count(mask.begin() + NJ1, mask.end(),   true) * junction_cost * 2;
             double delta = score - next_score;
-            if (next_score < score + eps or bernoulli_distribution(exp(delta / temperature))(gen)) {
+            if (next_score < score + eps or bernoulli_distribution(exp(0.1 * delta / temperature))(gen)) {
                 score = next_score;
                 if (score < highscore) {
                     highscore = score;

@@ -2623,3 +2623,9 @@ example testは結果が決まり次第出力されるということか。
 えっなんで下がるの。
 まあ時間は余り気味だし古いのとのmax取ればいいけど。
 どういうケースで下がってるか見たいし seed <= 2000 の全部やるのを回してるのでその終了待ち。
+
+交差点の建設後の勾配を出力できるようにした。 まあ元々できてたけど手間だし町との区別がだめだったため。
+次の1枚目がSAのみ、2枚目が今回の修正。 やはり改善してるように見えるのだが。
+
+1.  ![grad.5.86821dd57560c8e2ffd5ba90f5887056f49c1458.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/grad.5.86821dd57560c8e2ffd5ba90f5887056f49c1458.png?token=ACGd-ISTSkFddppDXE54BPuMnDkVBf6Dks5bAktOwA%3D%3D)
+1.  ![grad.5.58bf853ea47b4b9c7171e4e4d86ed929b2a28a16.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/grad.5.58bf853ea47b4b9c7171e4e4d86ed929b2a28a16.png?token=ACGd-FsnofhWQVinOhqxLhHM4yIreoqBks5bAkobwA%3D%3D)

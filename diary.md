@@ -2625,7 +2625,34 @@ example testは結果が決まり次第出力されるということか。
 どういうケースで下がってるか見たいし seed <= 2000 の全部やるのを回してるのでその終了待ち。
 
 交差点の建設後の勾配を出力できるようにした。 まあ元々できてたけど手間だし町との区別がだめだったため。
+色は相対値で出ている。 最後に残った赤色がどれくらいのものなのかは現状では元々のやつを見るしかない。
 次の1枚目がSAのみ、2枚目が今回の修正。 やはり改善してるように見えるのだが。
+となるとやはり下がったのはバグか。
 
 1.  ![grad.5.86821dd57560c8e2ffd5ba90f5887056f49c1458.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/grad.5.86821dd57560c8e2ffd5ba90f5887056f49c1458.png?token=ACGd-ISTSkFddppDXE54BPuMnDkVBf6Dks5bAktOwA%3D%3D)
 1.  ![grad.5.58bf853ea47b4b9c7171e4e4d86ed929b2a28a16.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/grad.5.58bf853ea47b4b9c7171e4e4d86ed929b2a28a16.png?token=ACGd-FsnofhWQVinOhqxLhHM4yIreoqBks5bAkobwA%3D%3D)
+
+学校へ行く。 4限は授業。 今日は起きるのが遅かったため睡眠調整はいらないかなと思ったけど今ちょっと眠たくて不安。
+まあ完全に覚醒してても当然のように振り落とされるのでまあ。
+
+今回の授業もよく分からなかった。
+位相。 Lindelofはcompactを可算にしたやつ。 前回もだがstatementには集合論の雰囲気がほぼ無なのにmodelが出てくるの面白い。
+H(\theta) の elementary submodel M を持ってきて X \cap M と制限して M の中で考えて最後にelementarityで V の上に引き上げてたっぽいことは分かった。
+でもこれは前回の間に理解しておくべきだったことだろう。
+帰りに食料を買わないとだめだったのだが、ねむたさによりすべてが面倒な気分だったので失敗。 まあしかたない。
+寝る。
+2018年  5月 14日 月曜日 17:42:30 JST。
+
+### 5/15
+
+2018年  5月 15日 火曜日 05:28:00 JST。
+ほぼ12時間。
+起きたら明るかった。
+
+古いのと新しいので表を比較してたらバグを見つけた。
+交差点の対の候補がないのに悪化してるケース。
+どこかで焼き鈍しのBoltzmann定数をいじったらしくてその影響。
+これでおそらく明確に改善されるはず。
+提出ミスを疑って再提出した直後なのでしばらく待機。
+一方で seed <= 2000 の average of average reference delta = 26.0370774288 とそれでも平均的には点数は上昇していたため、 overall score の信用できなさが感じられる。
+これの結果を見るに、点の個数が小さいなら安全のため総当たり、大きい場合も定数調整と時間の延長が必要だろう。

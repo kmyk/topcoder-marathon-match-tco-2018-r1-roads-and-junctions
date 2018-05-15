@@ -29,7 +29,7 @@ constexpr int TLE = 10; // sec
 class xor_shift_128 {
 public:
     typedef uint32_t result_type;
-    xor_shift_128(uint32_t seed) {
+    xor_shift_128(uint32_t seed = 42) {
         set_seed(seed);
     }
     void set_seed(uint32_t seed) {
@@ -181,10 +181,190 @@ double compute_cost_of_spanning_tree_kruskal(vector<point_t> const & cities, vec
     return acc;
 }
 
+vector<point_t> pack_points(vector<int> const & b) {
+    assert (b.size() % 2 == 0);
+    int n = b.size() / 2;
+    vector<point_t> a(n);
+    REP (i, n) {
+        int x = b[2 * i    ];
+        int y = b[2 * i + 1];
+        a[i] = { y, x };
+    }
+    return a;
+}
+vector<int> unpack_points(vector<point_t> const & a) {
+    int n = a.size();
+    vector<int> b(2 * n);
+    REP (i, n) {
+        b[2 * i    ] = a[i].x;
+        b[2 * i + 1] = a[i].y;
+    }
+    return b;
+}
+vector<int> unpack_pairs(vector<pair<int, int> > const & a) {
+    int n = a.size();
+    vector<int> b(2 * n);
+    REP (i, n) {
+        b[2 * i    ] = a[i].first;
+        b[2 * i + 1] = a[i].second;
+    }
+    return b;
+}
+
+vector<pair<int, int> > drop_first_key(vector<tuple<double, int, int> > const & xs) {
+    vector<pair<int, int> > ys;
+    for (auto const & x : xs) {
+        ys.emplace_back(get<1>(x), get<2>(x));
+    }
+    return ys;
+}
+
 const int neighborhood4_y[] = { 0, -1,  0, 1 };
 const int neighborhood4_x[] = { 1,  0, -1, 0 };
 const int neighborhood8_y[] = { 0, -1, -1, -1, 0, 1, 1, 1 };
 const int neighborhood8_x[] = { 1, 1, 0, -1, -1, -1, 0, 1 };
+
+
+/******************************************************************************
+ * solver class
+ ******************************************************************************/
+
+class RoadsAndJunctions {
+
+double clock_begin;
+xor_shift_128 gen;
+int S;
+vector<point_t> cities;
+double junction_cost;
+double failure_probability;
+int NC;
+vector<point_t> junctions;
+vector<bool> junction_status;
+vector<pair<int, int> > roads;
+
+
+
+/******************************************************************************
+ * entry points
+ ******************************************************************************/
+
+public:
+vector<int> buildJunctions(int a_S, vector<int> a_cities, double a_junctionCost, double a_failureProbability) {
+    clock_begin = rdtsc();
+    random_device device;
+    gen = (decltype(gen))(device());
+    S = a_S;
+    cities = pack_points(a_cities);
+    junction_cost = a_junctionCost;
+    failure_probability = a_failureProbability;
+    NC = cities.size();
+    solve();
+    return unpack_points(junctions);
+}
+
+vector<int> buildRoads(vector<int> a_junctionStatus) {
+    junction_status = vector<bool>(ALL(a_junctionStatus));
+    roads = with_junctions_status(NC, junctions, junction_status, [&](vector<point_t> const & junctions) {
+        vector<point_t> points;
+        copy(ALL(cities), back_inserter(points));
+        copy(ALL(junctions), back_inserter(points));
+        vector<tuple<double, int, int> > weighted_edges = construct_spanning_tree_prim(points);
+        return drop_first_key(weighted_edges);
+    });
+    debug_print();
+    return unpack_pairs(roads);
+}
+
+
+
+/******************************************************************************
+ * solve() function
+ ******************************************************************************/
+
+private:
+
+#ifdef LOCAL
+ll seed;
+#endif
+vector<tuple<double, int, int> > city_tree;
+double reference_score;
+void solve() {
+    // prepare
+    city_tree = construct_spanning_tree_prim(cities);
+    reference_score = 0;
+    for (auto const & edge : city_tree) {
+        reference_score += get<0>(edge);
+    }
+
+    // print debug info
+#ifdef LOCAL
+    seed = -1;
+    if (getenv("SEED") != nullptr) {
+        seed = atoll(getenv("SEED"));
+        cerr << "seed = " << seed << endl;
+    }
+#endif
+    cerr << "S = " << S << endl;
+    cerr << "NC = " << NC << endl;
+    cerr << "junction cost = " << junction_cost << endl;
+    cerr << "failure probability = " << failure_probability << endl;
+    cerr << "reference score = " << reference_score << endl;
+
+    // build a junction to find candidates for hill climbing
+    build_one_junction_many_times();
+    vector<pair<double, point_t> > candidates = make_candidates_from_memo(compute_cost_of_spanning_tree_memo_1);
+    cerr << "size of candidates for hill climbing = " << candidates.size() << endl;
+
+    // hill climbing to filter candidates
+    candidates = filter_candidates_with_hill_climbing(candidates);
+    cerr << "size of candidates after hill climbing = " << candidates.size() << endl;
+
+    { // remove not good points
+        auto it = lower_bound(ALL(candidates), make_pair(reference_score + eps, (point_t) { -1, -1 }));
+        candidates.erase(it, candidates.end());
+        cerr << "size of candidates after simple pruning = " << candidates.size() << endl;
+    }
+
+    // find pairs of points which make better score
+    vector<pair<int, int> > conflicteds = enumerate_conflicted_pairs(candidates);
+    cerr << "size of conflicted pairs = " << conflicteds.size() << endl;
+    vector<tuple<double, point_t, point_t> > pair_candidates = find_pair_candidates_with_hill_climbing(candidates, conflicteds);
+    cerr << "size of pair candidates = " << pair_candidates.size() << endl;
+
+    // prune unused candidates
+    candidates.erase(remove_if(ALL(candidates), [&](pair<double, point_t> const & candidate) {
+        double score = candidate.first;
+        double modified_score = reference_score * failure_probability + score * (1 - failure_probability) + junction_cost;
+        return reference_score < modified_score;
+    }), candidates.end());
+    pair_candidates.erase(remove_if(ALL(pair_candidates), [&](tuple<double, point_t, point_t> const & candidate) {
+        double score = get<0>(candidate);
+        double p = 1 - pow(1 - failure_probability, 2);
+        double modified_score = reference_score * p + score * (1 - p) + 2 * junction_cost;
+        return reference_score < modified_score;
+    }), pair_candidates.end());
+
+    // check conflicts with simulated annealing
+    tie(candidates, pair_candidates) = select_candidates_with_simulated_annealing(candidates, pair_candidates);
+    cerr << "size of candidates after simulated annealing = " << candidates.size() << " + " << pair_candidates.size() << endl;
+
+    // construct the result
+    auto a = list_junctions_from_candidates(candidates);
+    auto b = list_junctions_from_pair_candidates(pair_candidates);
+    copy(ALL(a), back_inserter(junctions));
+    copy(ALL(b), back_inserter(junctions));
+
+    // normalize junctions
+    sort(ALL(junctions));
+    junctions.erase(unique(ALL(junctions)), junctions.end());
+    junctions.erase(remove_if(ALL(junctions), [&](point_t p) { return count(ALL(cities), p); }), junctions.end());
+    if ((int)junctions.size() > 2 * NC) {
+        junctions.resize(2 * NC);
+#ifdef LOCAL
+        assert (false);
+#endif
+    }
+}
 
 
 
@@ -192,8 +372,25 @@ const int neighborhood8_x[] = { 1, 1, 0, -1, -1, -1, 0, 1 };
  * parts of solve() function
  ******************************************************************************/
 
-template <class Function>
-void build_one_junction_many_times(int S, int NC, vector<point_t> const & cities, Function & compute_cost_of_spanning_tree_1) {
+map<point_t, double> compute_cost_of_spanning_tree_memo_1;
+double compute_cost_of_spanning_tree_1(point_t p) {
+    auto & memo = compute_cost_of_spanning_tree_memo_1;
+    if (memo.count(p)) return memo[p];
+    vector<point_t> junctions(1, p);
+    return memo[p] = compute_cost_of_spanning_tree_kruskal(cities, junctions, city_tree);
+}
+
+map<pair<point_t, point_t>, double> compute_cost_of_spanning_tree_memo_2;
+double compute_cost_of_spanning_tree_2(point_t p, point_t q) {
+    auto & memo = compute_cost_of_spanning_tree_memo_2;
+    if (q < p) swap(p, q);
+    auto key = make_pair(p, q);
+    if (memo.count(key)) return memo[key];
+    vector<point_t> junctions({ p, q });
+    return memo[key] = compute_cost_of_spanning_tree_kruskal(cities, junctions, city_tree);
+}
+
+void build_one_junction_many_times() {
     REP (a, NC) REP (b, a) REP (c, b) {
         int y = round((cities[a].y + cities[b].y + cities[c].y) / 3.0);
         int x = round((cities[a].x + cities[b].x + cities[c].x) / 3.0);
@@ -208,7 +405,7 @@ void build_one_junction_many_times(int S, int NC, vector<point_t> const & cities
     }
 }
 
-vector<pair<double, point_t> > make_candidates_from_memo(double junction_cost, double reference_score, map<point_t, double> const & memo) {
+vector<pair<double, point_t> > make_candidates_from_memo(map<point_t, double> const & memo) {
     vector<pair<double, point_t> > candidates;
     for (auto const & it : memo) {
         double score = it.second;
@@ -220,8 +417,7 @@ vector<pair<double, point_t> > make_candidates_from_memo(double junction_cost, d
     return candidates;
 }
 
-template <class RandomEngine, class Function>
-vector<pair<double, point_t> > filter_candidates_with_hill_climbing(int S, double junction_cost, double failure_probability, double reference_score, vector<pair<double, point_t> > const & candidates, RandomEngine & gen, Function & compute_cost_of_spanning_tree_1) {
+vector<pair<double, point_t> > filter_candidates_with_hill_climbing(vector<pair<double, point_t> > const & candidates) {
     vector<pair<double, point_t> > next_candidates;
     array<int, 8> order;
     iota(ALL(order), 0);
@@ -257,8 +453,7 @@ vector<pair<double, point_t> > filter_candidates_with_hill_climbing(int S, doubl
     return next_candidates;
 }
 
-template <class Function>
-vector<pair<int, int> > enumerate_conflicted_pairs(double reference_score, vector<pair<double, point_t> > const & candidates, Function & compute_cost_of_spanning_tree_2) {
+vector<pair<int, int> > enumerate_conflicted_pairs(vector<pair<double, point_t> > const & candidates) {
     vector<pair<int, int> > conflicteds;
     REP (i, candidates.size()) {
         REP (j, i) {
@@ -275,14 +470,7 @@ vector<pair<int, int> > enumerate_conflicted_pairs(double reference_score, vecto
     return conflicteds;
 }
 
-template <class RandomEngine, class Function1, class Function2>
-vector<tuple<double, point_t, point_t> > find_pair_candidates_with_hill_climbing(
-        double reference_score,
-        vector<pair<double, point_t> > const & candidates,
-        vector<pair<int, int> > const & conflicteds,
-        RandomEngine & gen,
-        Function1 & compute_cost_of_spanning_tree_1,
-        Function2 & compute_cost_of_spanning_tree_2) {
+vector<tuple<double, point_t, point_t> > find_pair_candidates_with_hill_climbing(vector<pair<double, point_t> > const & candidates, vector<pair<int, int> > const & conflicteds) {
     vector<tuple<double, point_t, point_t> > pair_candidates;
     array<int, 8> order;
     iota(ALL(order), 0);
@@ -323,16 +511,7 @@ vector<tuple<double, point_t, point_t> > find_pair_candidates_with_hill_climbing
     return pair_candidates;
 }
 
-template <class RandomEngine>
-pair<vector<pair<double, point_t> >, vector<tuple<double, point_t, point_t> > > select_candidates_with_simulated_annealing(
-        vector<point_t> const & cities,
-        double junction_cost,
-        double reference_score,
-        vector<tuple<double, int, int> > const & city_tree,
-        vector<pair<double, point_t> > const & candidates,
-        vector<tuple<double, point_t, point_t> > const & pair_candidates,
-        double clock_begin,
-        RandomEngine & gen) {
+pair<vector<pair<double, point_t> >, vector<tuple<double, point_t, point_t> > > select_candidates_with_simulated_annealing(vector<pair<double, point_t> > const & candidates, vector<tuple<double, point_t, point_t> > const & pair_candidates) {
     // prepare
     int NJ1 = candidates.size();
     int NJ2 = pair_candidates.size();
@@ -429,8 +608,7 @@ pair<vector<pair<double, point_t> >, vector<tuple<double, point_t, point_t> > > 
     return make_pair(next_candidates, next_pair_candidates);
 }
 
-template <class Function>
-vector<point_t> list_junctions_from_candidates(int S, double junction_cost, double failure_probability, double reference_score, vector<pair<double, point_t> > const & candidates, Function & compute_cost_of_spanning_tree_1) {
+vector<point_t> list_junctions_from_candidates(vector<pair<double, point_t> > const & candidates) {
     vector<point_t> junctions;
     for (auto const & candidate : candidates) {
         point_t p = candidate.second;
@@ -473,8 +651,7 @@ vector<point_t> list_junctions_from_candidates(int S, double junction_cost, doub
     return junctions;
 }
 
-template <class Function>
-vector<point_t> list_junctions_from_pair_candidates(int S, double junction_cost, double failure_probability, double reference_score, vector<tuple<double, point_t, point_t> > const & pair_candidates, Function & compute_cost_of_spanning_tree_2) {
+vector<point_t> list_junctions_from_pair_candidates(vector<tuple<double, point_t, point_t> > const & pair_candidates) {
     vector<point_t> junctions;
     for (auto const & candidate : pair_candidates) {
         point_t p, q; tie(ignore, p, q) = candidate;
@@ -536,112 +713,20 @@ vector<point_t> list_junctions_from_pair_candidates(int S, double junction_cost,
 
 
 /******************************************************************************
- * solve() function
+ * debug_print
  ******************************************************************************/
 
-pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> > solve(int S, vector<point_t> const & cities, double junction_cost, double failure_probability) {
-    double clock_begin = rdtsc();
-    random_device device;
-    xor_shift_128 gen(device());
-
-    // prepare
-    int NC = cities.size();
-    vector<tuple<double, int, int> > city_tree = construct_spanning_tree_prim(cities);
-    double reference_score = 0;
-    for (auto const & edge : city_tree) {
-        reference_score += get<0>(edge);
-    }
-
-    // print debug info
-#ifdef LOCAL
-    ll seed = -1;
-    if (getenv("SEED") != nullptr) {
-        seed = atoll(getenv("SEED"));
-        cerr << "seed = " << seed << endl;
-    }
-#endif
-    cerr << "S = " << S << endl;
-    cerr << "NC = " << NC << endl;
-    cerr << "junction cost = " << junction_cost << endl;
-    cerr << "failure probability = " << failure_probability << endl;
-    cerr << "reference score = " << reference_score << endl;
-
-    // build a junction to find candidates for hill climbing
-    map<point_t, double> compute_cost_of_spanning_tree_memo_1;
-    auto compute_cost_of_spanning_tree_1 = [&](point_t p) {
-        auto & memo = compute_cost_of_spanning_tree_memo_1;
-        if (memo.count(p)) return memo[p];
-        vector<point_t> junctions(1, p);
-        return memo[p] = compute_cost_of_spanning_tree_kruskal(cities, junctions, city_tree);
-    };
-    build_one_junction_many_times(S, NC, cities, compute_cost_of_spanning_tree_1);
-    vector<pair<double, point_t> > candidates = make_candidates_from_memo(junction_cost, reference_score, compute_cost_of_spanning_tree_memo_1);
-    cerr << "size of candidates for hill climbing = " << candidates.size() << endl;
-
-    // hill climbing to filter candidates
-    candidates = filter_candidates_with_hill_climbing(S, junction_cost, failure_probability, reference_score, candidates, gen, compute_cost_of_spanning_tree_1);
-    cerr << "size of candidates after hill climbing = " << candidates.size() << endl;
-
-    { // remove not good points
-        auto it = lower_bound(ALL(candidates), make_pair(reference_score + eps, (point_t) { -1, -1 }));
-        candidates.erase(it, candidates.end());
-        cerr << "size of candidates after simple pruning = " << candidates.size() << endl;
-    }
-
-    // find pairs of points which make better score
-    map<pair<point_t, point_t>, double> compute_cost_of_spanning_tree_memo_2;
-    auto compute_cost_of_spanning_tree_2 = [&](point_t p, point_t q) {
-        auto & memo = compute_cost_of_spanning_tree_memo_2;
-        if (q < p) swap(p, q);
-        auto key = make_pair(p, q);
-        if (memo.count(key)) return memo[key];
-        vector<point_t> junctions({ p, q });
-        return memo[key] = compute_cost_of_spanning_tree_kruskal(cities, junctions, city_tree);
-    };
-    vector<pair<int, int> > conflicteds = enumerate_conflicted_pairs(reference_score, candidates, compute_cost_of_spanning_tree_2);
-    cerr << "size of conflicted pairs = " << conflicteds.size() << endl;
-    vector<tuple<double, point_t, point_t> > pair_candidates = find_pair_candidates_with_hill_climbing(reference_score, candidates, conflicteds, gen, compute_cost_of_spanning_tree_1, compute_cost_of_spanning_tree_2);
-    cerr << "size of pair candidates = " << pair_candidates.size() << endl;
-
-    // prune unused candidates
-    candidates.erase(remove_if(ALL(candidates), [&](pair<double, point_t> const & candidate) {
-        double score = candidate.first;
-        double modified_score = reference_score * failure_probability + score * (1 - failure_probability) + junction_cost;
-        return reference_score < modified_score;
-    }), candidates.end());
-    pair_candidates.erase(remove_if(ALL(pair_candidates), [&](tuple<double, point_t, point_t> const & candidate) {
-        double score = get<0>(candidate);
-        double p = 1 - pow(1 - failure_probability, 2);
-        double modified_score = reference_score * p + score * (1 - p) + 2 * junction_cost;
-        return reference_score < modified_score;
-    }), pair_candidates.end());
-
-    // check conflicts with simulated annealing
-    tie(candidates, pair_candidates) = select_candidates_with_simulated_annealing(cities, junction_cost, reference_score, city_tree, candidates, pair_candidates, clock_begin, gen);
-    cerr << "size of candidates after simulated annealing = " << candidates.size() << " + " << pair_candidates.size() << endl;
-
-    // construct the result
-    vector<point_t> junctions; {
-        auto a = list_junctions_from_candidates(     S, junction_cost, failure_probability, reference_score,      candidates, compute_cost_of_spanning_tree_1);
-        auto b = list_junctions_from_pair_candidates(S, junction_cost, failure_probability, reference_score, pair_candidates, compute_cost_of_spanning_tree_2);
-        copy(ALL(a), back_inserter(junctions));
-        copy(ALL(b), back_inserter(junctions));
-    }
-
-    // normalize junctions
-    sort(ALL(junctions));
-    junctions.erase(unique(ALL(junctions)), junctions.end());
-    junctions.erase(remove_if(ALL(junctions), [&](point_t p) { return count(ALL(cities), p); }), junctions.end());
-    if ((int)junctions.size() > 2 * NC) {
-        junctions.resize(2 * NC);
-#ifdef LOCAL
-        assert (false);
-#endif
+void debug_print() {
+    double elapsed = rdtsc() - clock_begin;
+    int NJ = junctions.size();
+    double score = NJ * junction_cost;
+    for (auto road : roads) {
+        int a, b; tie(a, b) = road;
+        score += calc_distance(cities[a], cities[b]);
     }
 
 #ifdef LOCAL
     // measure average score
-    double local_elapsed = rdtsc();
     vector<double> samples; {
         int NJ = junctions.size();
         REP (iteration, 10000) {
@@ -657,122 +742,47 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
         sort(ALL(samples));
     }
     double average_reference_delta = accumulate(ALL(samples), 0.0) / samples.size();
-    local_elapsed = rdtsc() - local_elapsed;
 #endif
 
-    // solve roads
-    auto cont = [=](vector<bool> const & junction_status) {
-        return with_junctions_status(NC, junctions, junction_status, [&](vector<point_t> const & junctions) {
-            int NJ = junction_status.size();
-
-            // use all junctions
-            vector<point_t> points;
-            copy(ALL(cities), back_inserter(points));
-            copy(ALL(junctions), back_inserter(points));
-            vector<tuple<double, int, int> > weighted_edges = construct_spanning_tree_prim(points);
-            vector<pair<int, int> > edges;
-            double score = 0;
-            for (auto const & edge : weighted_edges) {
-                double cost; int a, b; tie(cost, a, b) = edge;
-                score += cost;
-                edges.emplace_back(a, b);
-            }
-            score += NJ * junction_cost;
-
-            // print debug info
-            double elapsed = rdtsc() - clock_begin;
-            auto format_float = [&](double x) { return round(x * 1e8) * 1e-8 + 0; };  // NOTE: "+ 0" removes negative zeros
-            cerr << "score = " << score << endl;
-            cerr << "NJ = " << NJ << endl;
-            cerr << "raw reference delta = " << reference_score - score << endl;
+    auto format_float = [&](double x) { return round(x * 1e8) * 1e-8 + 0; };  // NOTE: "+ 0" removes negative zeros
+    cerr << "score = " << score << endl;
+    cerr << "NJ = " << NJ << endl;
+    cerr << "raw reference delta = " << reference_score - score << endl;
 #ifdef LOCAL
-            cerr << "average score = " << reference_score - average_reference_delta << endl;
-            cerr << "average reference delta = " << format_float(average_reference_delta) << endl;
-            elapsed -= local_elapsed;
+    cerr << "average score = " << reference_score - average_reference_delta << endl;
+    cerr << "average reference delta = " << format_float(average_reference_delta) << endl;
 #endif
-            cerr << "elapsed = " << elapsed << endl;
+    cerr << "elapsed = " << elapsed << endl;
 #ifdef LOCAL
-            cerr << "{\"seed\":" << seed
-                 << ",\"S\":" << S
-                 << ",\"NC\":" << NC
-                 << ",\"junction_cost\":" << junction_cost
-                 << ",\"failure_probability\":" << failure_probability
-                 << ",\"reference_score\":" << reference_score
-                 << ",\"score\":" << score
-                 << ",\"NJ\":" << NJ
-                 << ",\"raw_reference_delta\":" << reference_score - score
-                 << ",\"average_score\":" << score - average_reference_delta
-                 << ",\"average_reference_delta\":" << format_float(average_reference_delta)
-                 << ",\"elapsed\":" << elapsed
-                 ;
+    cerr << "{\"seed\":" << seed
+         << ",\"S\":" << S
+         << ",\"NC\":" << NC
+         << ",\"junction_cost\":" << junction_cost
+         << ",\"failure_probability\":" << failure_probability
+         << ",\"reference_score\":" << reference_score
+         << ",\"score\":" << score
+         << ",\"NJ\":" << NJ
+         << ",\"raw_reference_delta\":" << reference_score - score
+         << ",\"average_score\":" << score - average_reference_delta
+         << ",\"average_reference_delta\":" << format_float(average_reference_delta)
+         << ",\"elapsed\":" << elapsed
+         ;
 /*
-            cerr << ",\"delta_samples\":[";
-            map<double, int> sample_count;
-            for (double sample : samples) {
-                sample_count[sample] += 1;
-            }
-            bool is_first = true;
-            for (auto it : sample_count) {
-                if (not is_first) cerr << ",";
-                is_first = false;
-                cerr << "[" << it.first << "," << it.second << "]";
-            }
-            cerr << "]";
+    cerr << ",\"delta_samples\":[";
+    map<double, int> sample_count;
+    for (double sample : samples) {
+        sample_count[sample] += 1;
+    }
+    bool is_first = true;
+    for (auto it : sample_count) {
+        if (not is_first) cerr << ",";
+        is_first = false;
+        cerr << "[" << it.first << "," << it.second << "]";
+    }
+    cerr << "]";
 */
-            cerr << "}" << endl;
+    cerr << "}" << endl;
 #endif
-            return edges;
-        });
-    };
-    return make_pair(junctions, cont);
 }
 
-
-
-/******************************************************************************
- * adaptor for solve() function
- ******************************************************************************/
-
-vector<point_t> pack_points(vector<int> const & b) {
-    assert (b.size() % 2 == 0);
-    int n = b.size() / 2;
-    vector<point_t> a(n);
-    REP (i, n) {
-        int x = b[2 * i    ];
-        int y = b[2 * i + 1];
-        a[i] = { y, x };
-    }
-    return a;
-}
-vector<int> unpack_points(vector<point_t> const & a) {
-    int n = a.size();
-    vector<int> b(2 * n);
-    REP (i, n) {
-        b[2 * i    ] = a[i].x;
-        b[2 * i + 1] = a[i].y;
-    }
-    return b;
-}
-vector<int> unpack_pairs(vector<pair<int, int> > const & a) {
-    int n = a.size();
-    vector<int> b(2 * n);
-    REP (i, n) {
-        b[2 * i    ] = a[i].first;
-        b[2 * i + 1] = a[i].second;
-    }
-    return b;
-}
-
-class RoadsAndJunctions {
-    function<vector<pair<int, int> > (vector<bool> const &)> cont;
-public:
-    vector<int> buildJunctions(int S, vector<int> cities, double junctionCost, double failureProbability) {
-        vector<point_t> junctions;
-        tie(junctions, cont) = solve(S, pack_points(cities), junctionCost, failureProbability);
-        return unpack_points(junctions);
-    }
-    vector<int> buildRoads(vector<int> junctionStatus) {
-        vector<pair<int, int> > roads = cont(vector<bool>(ALL(junctionStatus)));
-        return unpack_pairs(roads);
-    }
 };

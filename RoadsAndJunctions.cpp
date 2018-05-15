@@ -387,11 +387,20 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
             }
             int i = uniform_int_distribution<int>(0, NJ - 1)(gen);
             mask[i] = not mask[i];
+            int j = -1;
+            if (bernoulli_distribution(0.5)(gen)) {
+                j = uniform_int_distribution<int>(0, NJ - 1)(gen);
+                if (j == i) {
+                    j = -1;
+                } else {
+                    mask[j] = not mask[j];
+                }
+            }
             double next_score = compute_cost_of_spanning_tree_mask(mask);
             next_score += count(mask.begin(), mask.begin() + NJ1, true) * junction_cost;
             next_score += count(mask.begin() + NJ1, mask.end(),   true) * junction_cost * 2;
             double delta = score - next_score;
-            if (next_score < score + eps or bernoulli_distribution(exp(0.1 * delta / temperature))(gen)) {
+            if (next_score < score + eps or bernoulli_distribution(exp(delta / temperature))(gen)) {
                 score = next_score;
                 if (score < highscore) {
                     highscore = score;
@@ -404,6 +413,9 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
                 }
             } else {
                 mask[i] = not mask[i];
+                if (j != -1) {
+                    mask[j] = not mask[j];
+                }
             }
         }
 

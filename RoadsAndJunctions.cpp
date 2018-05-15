@@ -596,6 +596,7 @@ pair<vector<pair<double, point_t> >, vector<tuple<double, point_t, point_t> > > 
     cerr << "simulated annealing: iteration = " << iteration << endl;
 
     // make the result
+    mask = result;
     vector<pair<double, point_t> > next_candidates;
     REP (i, NJ1) if (mask[i]) {
         next_candidates.push_back(candidates[i]);

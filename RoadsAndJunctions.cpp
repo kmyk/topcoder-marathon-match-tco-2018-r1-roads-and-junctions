@@ -515,24 +515,9 @@ pair<vector<pair<double, point_t> >, vector<tuple<double, point_t, point_t> > > 
     int NJ1 = candidates.size();
     int NJ2 = pair_candidates.size();
     int NJ = NJ1 + NJ2;
-    auto pack = [&](vector<char> const & mask) {
-        string key;
-        REP (b, (NJ + 7) / 8) {
-            uint8_t c = 0;
-            REP (i, 8) {
-                int j = b * 8 + i;
-                if (j < NJ and mask[j]) {
-                    c |= 1u << i;
-                }
-            }
-            key.push_back(c);
-        }
-        return key;
-    };
-    unordered_map<string, double> memo;
-    auto compute_cost_of_spanning_tree_mask = [&](vector<char> const & mask) {
-        string key = pack(mask);
-        if (memo.count(key)) return memo[key];
+    unordered_map<vector<bool>, double> memo;
+    auto compute_cost_of_spanning_tree_mask = [&](vector<bool> const & mask) {
+        if (memo.count(mask)) return memo[mask];
         vector<point_t> junctions;
         REP (i, NJ) if (mask[i]) {
             if (i < NJ1) {
@@ -542,17 +527,21 @@ pair<vector<pair<double, point_t> >, vector<tuple<double, point_t, point_t> > > 
                 junctions.push_back(get<2>(pair_candidates[i - NJ1]));
             }
         }
-        return memo[key] = compute_cost_of_spanning_tree_kruskal(cities, junctions, city_tree);
+        return memo[mask] = compute_cost_of_spanning_tree_kruskal(cities, junctions, city_tree);
     };
-    vector<char> mask(NJ);
+    vector<bool> mask(NJ);
     double score = reference_score;
-    vector<char> result = mask;
+    vector<bool> result = mask;
     double highscore = score;
+
+    // use idea of tabu search
+    vector<vector<bool> > tabu_list(100);
+    int tabu_head = 0;
 
     // run iterations
     int iteration = 0;
     double sa_clock_begin = rdtsc();
-    double sa_clock_end = min(clock_begin + TLE * 0.8, sa_clock_begin + TLE * 0.2 * NJ);
+    double sa_clock_end = clock_begin + TLE * 0.95;
     double temperature = 1;
     for (; ; ++ iteration) {
         if (iteration % 10 == 0) {
@@ -563,7 +552,7 @@ pair<vector<pair<double, point_t> >, vector<tuple<double, point_t, point_t> > > 
         int i = uniform_int_distribution<int>(0, NJ - 1)(gen);
         mask[i] = not mask[i];
         int j = -1;
-        if (bernoulli_distribution(0.5)(gen)) {
+        if (bernoulli_distribution(0.7)(gen)) {
             j = uniform_int_distribution<int>(0, NJ - 1)(gen);
             if (j == i) {
                 j = -1;
@@ -571,11 +560,22 @@ pair<vector<pair<double, point_t> >, vector<tuple<double, point_t, point_t> > > 
                 mask[j] = not mask[j];
             }
         }
+        int k = -1;
+        if (j != -1 and bernoulli_distribution(0.7)(gen)) {
+            k = uniform_int_distribution<int>(0, NJ - 1)(gen);
+            if (k == i or k == j) {
+                k = -1;
+            } else {
+                mask[k] = not mask[k];
+            }
+        }
         double next_score = compute_cost_of_spanning_tree_mask(mask);
         next_score += count(mask.begin(), mask.begin() + NJ1, true) * junction_cost;
         next_score += count(mask.begin() + NJ1, mask.end(),   true) * junction_cost * (2 + 0.5);  // pair candidates have much cost since both of the pair need to be successfully built
         double delta = score - next_score;
-        if (next_score < score + eps or bernoulli_distribution(exp(delta / temperature))(gen)) {
+        bool accept = next_score < score + eps or bernoulli_distribution(exp(delta) / temperature)(gen);
+        if (accept and find(ALL(tabu_list), mask) != tabu_list.end()) accept = false;
+        if (accept) {
             score = next_score;
             if (score < highscore) {
                 highscore = score;
@@ -586,11 +586,12 @@ pair<vector<pair<double, point_t> >, vector<tuple<double, point_t, point_t> > > 
                 REP3 (i, NJ1, NJ) cerr << int(mask[i]);
                 cerr << " " << reference_score - highscore << endl;
             }
+            tabu_list[tabu_head ++] = mask;
+            if (tabu_head == (int)tabu_list.size()) tabu_head = 0;
         } else {
             mask[i] = not mask[i];
-            if (j != -1) {
-                mask[j] = not mask[j];
-            }
+            if (j != -1) mask[j] = not mask[j];
+            if (k != -1) mask[k] = not mask[k];
         }
     }
     cerr << "simulated annealing: iteration = " << iteration << endl;

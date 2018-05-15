@@ -53,10 +53,10 @@ def main():
             ys += [ int(y) ]
             zs += [ reference_value - float(z) ]
 
+    junctions = []
     if args.output is not None:
         with open(args.output) as fh:
             NJ = int(fh.readline()) // 2
-            junctions = []
             for _ in range(NJ):
                 x = int(fh.readline())
                 y = int(fh.readline())

@@ -335,6 +335,19 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
         cerr << "size of pair candidates = " << pair_candidates.size() << endl;
     }
 
+    // prune unused candidates
+    candidates.erase(remove_if(ALL(candidates), [&](pair<double, point_t> const & candidate) {
+        double score = candidate.first;
+        double modified_score = reference_score * failure_probability + score * (1 - failure_probability) + junction_cost;
+        return reference_score < modified_score;
+    }), candidates.end());
+    pair_candidates.erase(remove_if(ALL(pair_candidates), [&](tuple<double, point_t, point_t> const & candidate) {
+        double score = get<0>(candidate);
+        double p = 1 - pow(1 - failure_probability, 2);
+        double modified_score = reference_score * p + score * (1 - p) + 2 * junction_cost;
+        return reference_score < modified_score;
+    }), pair_candidates.end());
+
     // check conflicts with simulated annealing
     if (not candidates.empty()) {
         // prepare
@@ -371,7 +384,7 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
             return memo[key] = compute_cost_of_spanning_tree_kruskal(cities, junctions, city_tree);
         };
         vector<char> mask(NJ);
-        double score = compute_cost_of_spanning_tree_mask(mask) + junction_cost * (NJ1 + 2 * NJ2);
+        double score = reference_score;
         vector<char> result = mask;
         double highscore = score;
 
@@ -399,7 +412,7 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
             }
             double next_score = compute_cost_of_spanning_tree_mask(mask);
             next_score += count(mask.begin(), mask.begin() + NJ1, true) * junction_cost;
-            next_score += count(mask.begin() + NJ1, mask.end(),   true) * junction_cost * 2;
+            next_score += count(mask.begin() + NJ1, mask.end(),   true) * junction_cost * (2 + 0.5);  // pair candidates have much cost since both of the pair need to be successfully built
             double delta = score - next_score;
             if (next_score < score + eps or bernoulli_distribution(exp(delta / temperature))(gen)) {
                 score = next_score;
@@ -461,7 +474,13 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
             modified_scores.push_back((1 - p) * score + p * reference_score + k * junction_cost + connection_cost);
         }
         int k = min_element(ALL(modified_scores)) - modified_scores.begin();
-        if (k == 0) continue;
+        if (k == 0) {
+            cerr << "ignore " << p << endl;
+#ifdef LOCAL
+            assert (false);
+#endif
+            continue;
+        }
         cerr << "use " << p << " (k = " << k << ", expected gain = " << reference_score - modified_scores[k] << ")" << endl;
 
         // use best k neighborhoods
@@ -499,7 +518,13 @@ pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> >
             modified_scores.push_back((1 - p) * score + p * reference_score + 2 * k * junction_cost + connection_cost);
         }
         int k = min_element(ALL(modified_scores)) - modified_scores.begin();
-        if (k == 0) continue;
+        if (k == 0) {
+            cerr << "ignore " << p << " " << q << endl;
+#ifdef LOCAL
+            assert (false);
+#endif
+            continue;
+        }
         cerr << "use " << p << " " << q << " (k = " << k << ", expected gain = " << reference_score - modified_scores[k] << ")" << endl;
 
         // use best k neighborhoods

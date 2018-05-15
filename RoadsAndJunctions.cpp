@@ -333,15 +333,14 @@ void solve() {
 
     // prune unused candidates
     candidates.erase(remove_if(ALL(candidates), [&](pair<double, point_t> const & candidate) {
-        double score = candidate.first;
-        double modified_score = reference_score * failure_probability + score * (1 - failure_probability) + junction_cost;
-        return reference_score < modified_score;
+        point_t p = candidate.second;
+        int k = compute_neighborhoods_for_candidate_point(p).first.size();
+        return k == 0;
     }), candidates.end());
     pair_candidates.erase(remove_if(ALL(pair_candidates), [&](tuple<double, point_t, point_t> const & candidate) {
-        double score = get<0>(candidate);
-        double p = 1 - pow(1 - failure_probability, 2);
-        double modified_score = reference_score * p + score * (1 - p) + 2 * junction_cost;
-        return reference_score < modified_score;
+        point_t p, q; tie(ignore, p, q) = candidate;
+        int k = compute_neighborhoods_for_candidate_point_pair(p, q).first.size();
+        return k == 0;
     }), pair_candidates.end());
 
     // check conflicts with simulated annealing

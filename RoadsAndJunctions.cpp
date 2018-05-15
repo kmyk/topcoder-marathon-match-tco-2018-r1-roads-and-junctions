@@ -175,7 +175,7 @@ const int neighborhood8_x[] = { 1, 1, 0, -1, -1, -1, 0, 1 };
 constexpr double eps = 1e-8;
 pair<vector<point_t>, function<vector<pair<int, int> > (vector<bool> const &)> > solve(int S, vector<point_t> const & cities, double junction_cost, double failure_probability) {
     double clock_begin = rdtsc();
-    xor_shift_128 gen(42);
+    xor_shift_128 gen((random_device()()));
 
     // prepare
     int NC = cities.size();

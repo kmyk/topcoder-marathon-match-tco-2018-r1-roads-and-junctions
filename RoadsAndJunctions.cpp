@@ -735,7 +735,9 @@ void debug_print() {
     double score = NJ * junction_cost;
     for (auto road : roads) {
         int a, b; tie(a, b) = road;
-        score += calc_distance(cities[a], cities[b]);
+        point_t p = a < NC ? cities[a] : junctions[a - NC];
+        point_t q = b < NC ? cities[b] : junctions[b - NC];
+        score += calc_distance(p, q);
     }
 
 #ifdef LOCAL

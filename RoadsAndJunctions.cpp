@@ -608,104 +608,110 @@ pair<vector<pair<double, point_t> >, vector<tuple<double, point_t, point_t> > > 
     return make_pair(next_candidates, next_pair_candidates);
 }
 
+pair<vector<point_t>, double> compute_neighborhoods_for_candidate_point(point_t p) {
+    // sort neighborhoods with score
+    vector<pair<double, point_t> > neighborhoods;
+    constexpr int radius = 3;
+    REP3 (ny, max(0, p.y - radius), min(S, p.y + radius) + 1) {
+        REP3 (nx, max(0, p.x - radius), min(S, p.x + radius) + 1) {
+            point_t np = { ny, nx };
+            double score = compute_cost_of_spanning_tree_1(np);
+            neighborhoods.emplace_back(score, np);
+        }
+    }
+    sort(ALL(neighborhoods));
+
+    // choose k
+    vector<double> modified_scores;
+    REP (k, neighborhoods.size()) {
+        double p = pow(failure_probability, k);
+        double score = neighborhoods[k].first;  // NOTE: this is an approximation
+        double connection_cost = 0.1 * max(0, k - 1);  // NOTE: this is also an approximation
+        modified_scores.push_back((1 - p) * score + p * reference_score + k * junction_cost + connection_cost);
+    }
+    int k = min_element(ALL(modified_scores)) - modified_scores.begin();
+
+    // make result
+    vector<point_t> result;
+    REP (i, k) {
+        result.push_back(neighborhoods[i].second);
+    }
+    return make_pair(result, modified_scores[k]);
+}
+
 vector<point_t> list_junctions_from_candidates(vector<pair<double, point_t> > const & candidates) {
     vector<point_t> junctions;
     for (auto const & candidate : candidates) {
         point_t p = candidate.second;
-
-        // sort neighborhoods with score
-        vector<pair<double, point_t> > neighborhoods;
-        constexpr int radius = 3;
-        REP3 (ny, max(0, p.y - radius), min(S, p.y + radius) + 1) {
-            REP3 (nx, max(0, p.x - radius), min(S, p.x + radius) + 1) {
-                point_t np = { ny, nx };
-                double score = compute_cost_of_spanning_tree_1(np);
-                neighborhoods.emplace_back(score, np);
-            }
-        }
-        sort(ALL(neighborhoods));
-
-        // choose k
-        vector<double> modified_scores;
-        REP (k, neighborhoods.size()) {
-            double p = pow(failure_probability, k);
-            double score = neighborhoods[k].first;  // NOTE: this is an approximation
-            double connection_cost = 0.1 * max(0, k - 1);  // NOTE: this is also an approximation
-            modified_scores.push_back((1 - p) * score + p * reference_score + k * junction_cost + connection_cost);
-        }
-        int k = min_element(ALL(modified_scores)) - modified_scores.begin();
-        if (k == 0) {
-            cerr << "ignore " << p << endl;
+        vector<point_t> qs; double modified_score; tie(qs, modified_score) = compute_neighborhoods_for_candidate_point(p);
+        int k = qs.size();
+        cerr << "use " << p << " (k = " << k << ", expected gain = " << reference_score - modified_score << ")" << endl;
 #ifdef LOCAL
-            assert (false);
+        assert (k != 0);
 #endif
-            continue;
-        }
-        cerr << "use " << p << " (k = " << k << ", expected gain = " << reference_score - modified_scores[k] << ")" << endl;
-
-        // use best k neighborhoods
-        REP (i, k) {
-            junctions.push_back(neighborhoods[i].second);
-        }
+        copy(ALL(qs), back_inserter(junctions));
     }
     return junctions;
+}
+
+pair<vector<point_t>, double> compute_neighborhoods_for_candidate_point_pair(point_t p, point_t q) {
+    // sort neighborhoods with score
+    vector<tuple<double, point_t, point_t> > neighborhoods;
+    constexpr int radius = 2;
+    REP3 (npy, max(0, p.y - radius), min(S, p.y + radius) + 1) {
+        REP3 (npx, max(0, p.x - radius), min(S, p.x + radius) + 1) {
+            point_t np = { npy, npx };
+            REP3 (nqy, max(0, q.y - radius), min(S, q.y + radius) + 1) {
+                REP3 (nqx, max(0, q.x - radius), min(S, q.x + radius) + 1) {
+                    point_t nq = { nqy, nqx };
+                    double score = compute_cost_of_spanning_tree_2(np, nq);
+                    neighborhoods.emplace_back(score, np, nq);
+                }
+            }
+        }
+    }
+    sort(ALL(neighborhoods));
+
+    // choose k
+    vector<double> modified_scores;
+    REP (k, neighborhoods.size()) {
+        double p1 = pow(failure_probability, k);
+        double p = 1 - pow(1 - p1, 2);
+        double score = get<0>(neighborhoods[k]);
+        double connection_cost = 0.2 * max(0, k - 1);
+        modified_scores.push_back((1 - p) * score + p * reference_score + 2 * k * junction_cost + connection_cost);
+    }
+    int k = min_element(ALL(modified_scores)) - modified_scores.begin();
+
+    // use best k neighborhoods
+    vector<point_t> result;
+    set<point_t> used_p;
+    set<point_t> used_q;
+    for (auto neighborhood : neighborhoods) {
+        point_t np, nq; tie(ignore, np, nq) = neighborhood;
+        if ((int)used_p.size() < k and not used_p.count(np)) {
+            used_p.insert(np);
+            result.push_back(np);
+        }
+        if ((int)used_q.size() < k and not used_q.count(nq)) {
+            used_q.insert(nq);
+            result.push_back(nq);
+        }
+    }
+    return make_pair(result, modified_scores[k]);
 }
 
 vector<point_t> list_junctions_from_pair_candidates(vector<tuple<double, point_t, point_t> > const & pair_candidates) {
     vector<point_t> junctions;
     for (auto const & candidate : pair_candidates) {
         point_t p, q; tie(ignore, p, q) = candidate;
-
-        // sort neighborhoods with score
-        vector<tuple<double, point_t, point_t> > neighborhoods;
-        constexpr int radius = 2;
-        REP3 (npy, max(0, p.y - radius), min(S, p.y + radius) + 1) {
-            REP3 (npx, max(0, p.x - radius), min(S, p.x + radius) + 1) {
-                point_t np = { npy, npx };
-                REP3 (nqy, max(0, q.y - radius), min(S, q.y + radius) + 1) {
-                    REP3 (nqx, max(0, q.x - radius), min(S, q.x + radius) + 1) {
-                        point_t nq = { nqy, nqx };
-                        double score = compute_cost_of_spanning_tree_2(np, nq);
-                        neighborhoods.emplace_back(score, np, nq);
-                    }
-                }
-            }
-        }
-        sort(ALL(neighborhoods));
-
-        // choose k
-        vector<double> modified_scores;
-        REP (k, neighborhoods.size()) {
-            double p1 = pow(failure_probability, k);
-            double p = 1 - pow(1 - p1, 2);
-            double score = get<0>(neighborhoods[k]);
-            double connection_cost = 0.2 * max(0, k - 1);
-            modified_scores.push_back((1 - p) * score + p * reference_score + 2 * k * junction_cost + connection_cost);
-        }
-        int k = min_element(ALL(modified_scores)) - modified_scores.begin();
-        if (k == 0) {
-            cerr << "ignore " << p << " " << q << endl;
+        vector<point_t> rs; double modified_score; tie(rs, modified_score) = compute_neighborhoods_for_candidate_point_pair(p, q);
+        int k = rs.size();
+        cerr << "use " << p << " " << q << " (k = " << k << ", expected gain = " << reference_score - modified_score << ")" << endl;
 #ifdef LOCAL
-            assert (false);
+        assert (k != 0);
 #endif
-            continue;
-        }
-        cerr << "use " << p << " " << q << " (k = " << k << ", expected gain = " << reference_score - modified_scores[k] << ")" << endl;
-
-        // use best k neighborhoods
-        set<point_t> used_p;
-        set<point_t> used_q;
-        for (auto neighborhood : neighborhoods) {
-            point_t np, nq; tie(ignore, np, nq) = neighborhood;
-            if ((int)used_p.size() < k and not used_p.count(np)) {
-                used_p.insert(np);
-                junctions.push_back(np);
-            }
-            if ((int)used_q.size() < k and not used_q.count(nq)) {
-                used_q.insert(nq);
-                junctions.push_back(nq);
-            }
-        }
+        copy(ALL(rs), back_inserter(junctions));
     }
     return junctions;
 }

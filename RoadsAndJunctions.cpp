@@ -515,6 +515,8 @@ pair<vector<pair<double, point_t> >, vector<tuple<double, point_t, point_t> > > 
     int NJ1 = candidates.size();
     int NJ2 = pair_candidates.size();
     int NJ = NJ1 + NJ2;
+    if (NJ == 0) return make_pair(vector<pair<double, point_t> >(), vector<tuple<double, point_t, point_t> >());
+
 #ifdef DEBUG
     map<vector<bool>, double> memo;
 #else

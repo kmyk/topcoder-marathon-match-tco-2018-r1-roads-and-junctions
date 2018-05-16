@@ -328,7 +328,8 @@ void solve() {
     // find pairs of points which make better score
     vector<pair<int, int> > conflicteds = enumerate_conflicted_pairs(candidates);
     cerr << "size of conflicted pairs = " << conflicteds.size() << endl;
-    vector<tuple<double, point_t, point_t> > pair_candidates = find_pair_candidates_with_hill_climbing(candidates, conflicteds);
+    vector<tuple<double, point_t, point_t> > pair_candidates = list_seed_of_pair_candidates(candidates, conflicteds);
+    pair_candidates = find_pair_candidates_with_hill_climbing(pair_candidates);
     cerr << "size of pair candidates = " << pair_candidates.size() << endl;
 
     // prune unused candidates
@@ -408,7 +409,7 @@ vector<pair<double, point_t> > make_candidates_from_memo(map<point_t, double> co
     vector<pair<double, point_t> > candidates;
     for (auto const & it : memo) {
         double score = it.second;
-        if (score < reference_score - junction_cost / 10.0) {  // this border is magical
+        if (score < reference_score - eps) {
             candidates.emplace_back(score, it.first);
         }
     }
@@ -469,15 +470,34 @@ vector<pair<int, int> > enumerate_conflicted_pairs(vector<pair<double, point_t> 
     return conflicteds;
 }
 
-vector<tuple<double, point_t, point_t> > find_pair_candidates_with_hill_climbing(vector<pair<double, point_t> > const & candidates, vector<pair<int, int> > const & conflicteds) {
+vector<tuple<double, point_t, point_t> > list_seed_of_pair_candidates(vector<pair<double, point_t> > const & candidates, vector<pair<int, int> > const & conflicteds) {
     vector<tuple<double, point_t, point_t> > pair_candidates;
-    array<int, 8> order;
-    iota(ALL(order), 0);
     for (auto conflicted : conflicteds) {
         int i, j; tie(i, j) = conflicted;
         point_t p = candidates[i].second;
         point_t q = candidates[j].second;
         double score = compute_cost_of_spanning_tree_2(p, q);
+        pair_candidates.emplace_back(score, p, q);
+    }
+    for (auto candidate : candidates) {
+        point_t p = candidate.second;
+        REP (a, NC) {
+            point_t q = cities[a];
+            q.y += (q.y < p.y ? +1 : p.y < q.y ? -1 : 0);
+            q.x += (q.x < p.x ? +1 : p.x < q.x ? -1 : 0);
+            double score = compute_cost_of_spanning_tree_2(p, q);
+            pair_candidates.emplace_back(score, p, q);
+        }
+    }
+    return pair_candidates;
+}
+
+vector<tuple<double, point_t, point_t> > find_pair_candidates_with_hill_climbing(vector<tuple<double, point_t, point_t> > const & prev_pair_candidates) {
+    vector<tuple<double, point_t, point_t> > pair_candidates;
+    array<int, 8> order;
+    iota(ALL(order), 0);
+    for (auto candidate : prev_pair_candidates) {
+        double score; point_t p, q; tie(score, p, q) = candidate;
         while (true) {
             shuffle(ALL(order), gen);
             bool found = false;
@@ -502,11 +522,12 @@ vector<tuple<double, point_t, point_t> > find_pair_candidates_with_hill_climbing
         }
         double score_1 = compute_cost_of_spanning_tree_1(p);
         double score_2 = compute_cost_of_spanning_tree_1(q);
-        if (score < min(reference_score, score_1 + score_2 - reference_score) - eps) {
+        if (reference_score - score > (reference_score - score_1) + (reference_score - score_2) + eps + 0.1 * junction_cost) {
             pair_candidates.emplace_back(score, p, q);
         }
     }
     sort(ALL(pair_candidates));
+    pair_candidates.erase(unique(ALL(pair_candidates)), pair_candidates.end());
     return pair_candidates;
 }
 

@@ -30,15 +30,17 @@ standings:
 		sed 's/\( \+\)|\?/\1| /g ; s/^/| / ; s/.$$// ; y/~/ / ; 1 { p ; s/[^|]/-/g }'
 
 timestamp := $(shell date +%s)
+size := 2000
 score: a.out tester.jar
 	-mkdir log
 	cp a.out log/${timestamp}.bin
 	echo 'data="$$(java -jar tester.jar -exec ./log/${timestamp}.bin -debug -seed $$1 | tee /dev/stderr | grep '\''{"seed":'\'')" ; flock log/${timestamp}.lock echo "$$data" >> log/${timestamp}.json' > log/${timestamp}.sh
-	parallel -- bash log/${timestamp}.sh {} ::: $$(seq 2000)
+	parallel -- bash log/${timestamp}.sh {} ::: $$(seq ${size})
 	cat log/${timestamp}.json | python3 stat-results.py table
 	cat log/${timestamp}.json | python3 stat-results.py summary
 
-debug:
+debug: a.out tester.jar
+	make score size=100 timestamp=${timestamp}
 	-mkdir images
 	for seed in $$(seq 100) ; do \
 		time java -jar tester.jar -exec ./a.out -seed $$seed ; \

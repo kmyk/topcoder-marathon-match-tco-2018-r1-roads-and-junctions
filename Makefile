@@ -34,6 +34,6 @@ score: a.out tester.jar
 	-mkdir log
 	cp a.out log/${timestamp}.bin
 	echo 'data="$$(java -jar tester.jar -exec ./log/${timestamp}.bin -debug -seed $$1 | tee /dev/stderr | grep '\''{"seed":'\'')" ; flock log/${timestamp}.lock echo "$$data" >> log/${timestamp}.json' > log/${timestamp}.sh
-	parallel --jobs 50% -- bash log/${timestamp}.sh {} ::: $$(seq 100)
+	parallel -- bash log/${timestamp}.sh {} ::: $$(seq 2000)
 	cat log/${timestamp}.json | python3 stat-results.py table
 	cat log/${timestamp}.json | python3 stat-results.py summary

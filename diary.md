@@ -4619,3 +4619,17 @@ seed <= 2000 で基準値からの平均の差分の頻度。
 なるほどとはなるがしかしこれは改善には役立たない図。 3分かからずで書けるやつなのでまあいいけど。
 
 ![distplot.delta.00ffc6a103aaebd4585771932fb80c6922642b38.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/distplot.delta.00ffc6a103aaebd4585771932fb80c6922642b38.png?token=ACGd-PwOGTNNKNnLUpktfTXVLDdsQtprks5bBRcGwA%3D%3D)
+
+もうむり。
+評価関数にMonte Carloによる期待値を採用し各建設候補について使用する個数を焼き鈍したがだめだった。
+速度が足りなさすぎる。 iteration = 1000 ぐらいしか回らない。 現状の評価関数は嘘とはいえ少ないときでも iteration = 70000 回るのでこちらが優位。
+
+MSTの計算の差分更新をすっかり忘れてたことに気付いた。
+V = NC + NJ とする。
+1点追加ならとりあえず最短のものを繋ぎ、閉路をDFSとかで上手くやると O(V \log V) でできそうだけどもしかすると2乗。
+1点削除ならPrim法をやって O(V^2 \log V) ぐらい。
+無理では。
+1辺追加削除なら楽なのだけど完全グラフなので辺数だけ効いてきてあまり変わらない気がする。
+どちらかと言えば交差点に対し近くの k 個の町しか見ないようにするとかそういう方向の高速化の方が適切そう。
+-> 正解だった。 しかし高々4倍速程度なので焼け石に水。
+やっぱりだめでした。 諦めていい？

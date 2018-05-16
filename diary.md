@@ -173,10 +173,10 @@ Molle-Richter-Rossmanith法というのもあるらしいが方向性は変わ�
 愚直に三角形を総当たりしてもよいが、時間もいくらかあるしDelaunay三角形分割とかをしたい気もする。
 乱択でわりと簡単らしい (出典: [ドロネー三角形分割, shiatsumat - SlideShare](https://www.slideshare.net/Kinokkory/ss-25736696)) しまだ書いたことないのでやりたい。
 
--   ![grad.1.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/cbd1479f4b52cc2a2b71036a7ad3f7b26376ee68/images/grad.1.png?token=ACGd-Pwi2rgANkbJkgMu5CWHWdbQ8fo4ks5a_2tYwA%3D%3D)
--   ![grad.2.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/grad.2.png?token=ACGd-FdiZxoabEv2ttq-wQGI4EbBjRVeks5a_2uLwA%3D%3D)
--   ![grad.3.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/grad.3.png?token=ACGd-KPyxHRT_zSCnhuyFc7g6J03XuH1ks5a_2uNwA%3D%3D)
--   ![grad3d.2.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/grad3d.2.png?token=ACGd-CJlJzwqbUMe8hRtRPkH9eF1Aoz9ks5a_2ufwA%3D%3D)
+-   ![grad.1.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/grad.1.png)
+-   ![grad.2.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/grad.2.png)
+-   ![grad.3.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/grad.3.png)
+-   ![grad3d.2.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/grad3d.2.png)
 
 ### 5/11
 
@@ -801,9 +801,9 @@ Angel Beats!の残りを見た。
 発見の決め手はあのplotだったのでやはり手を動かして可視化するのは大事ですね。
 下図1枚目が修正前、3枚目がplotであり交差点の数が合わない。2枚目が修正後でこちらはよく対応が取れている。
 
-1.  ![vis.10.d2ccba14f97246981423b74a695e65e9046dafa3.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/vis.10.d2ccba14f97246981423b74a695e65e9046dafa3.png?token=ACGd-B9GvZUVN4q1BUkuxsXtPdELjUVHks5a_2vGwA%3D%3D)
-1.  ![vis.10.2d54d52e7137702eac2fd6011a1d3cbf3893729b.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/vis.10.2d54d52e7137702eac2fd6011a1d3cbf3893729b.png?token=ACGd-K7SGui_OmmOhLAOJMVNBIYnZe9-ks5a_2vIwA%3D%3D)
-1.  ![grad.10.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/grad.10.png?token=ACGd-JP-b_KLKBLHtoRMj40evz8_TG2Eks5a_2vawA%3D%3D)
+1.  ![vis.10.d2ccba14f97246981423b74a695e65e9046dafa3.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/vis.10.d2ccba14f97246981423b74a695e65e9046dafa3.png)
+1.  ![vis.10.2d54d52e7137702eac2fd6011a1d3cbf3893729b.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/vis.10.2d54d52e7137702eac2fd6011a1d3cbf3893729b.png)
+1.  ![grad.10.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/grad.10.png)
 
 <details>
 <summary>順位表 2018年  5月 12日 土曜日 05:30:24 JST 2d54d52e7137702eac2fd6011a1d3cbf3893729b</summary>
@@ -1178,11 +1178,11 @@ NJ が大きくても正規分布ぽくない変な形になることがある�
 画像が増えたのでpathをいじったらこのmarkdownに貼ってた古い画像が壊れた。
 commit hashを含めたfull pathで書かないとだめっぽい。 でも面倒なので適当に修正された。
 
-1.  ![pairplot.200.de28db851d58b9a233d5f496989a9842053badc2.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/pairplot.200.de28db851d58b9a233d5f496989a9842053badc2.png?token=ACGd-L9kvMoFMocPOKeJ5QInXkmXU0FQks5a_2wPwA%3D%3D)
-1.  ![distplot.2.de28db851d58b9a233d5f496989a9842053badc2.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/distplot.2.de28db851d58b9a233d5f496989a9842053badc2.png?token=ACGd-O_Yz_2s8rJtpPPH2XI7FKBpUQhsks5a_2_YwA%3D%3D)
-1.  ![distplot.3.de28db851d58b9a233d5f496989a9842053badc2.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/distplot.3.de28db851d58b9a233d5f496989a9842053badc2.png?token=ACGd-GJxJ7iX_7ztjYM9zYh64mmLAugkks5a_2yLwA%3D%3D)
-1.  ![distplot.4.de28db851d58b9a233d5f496989a9842053badc2.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/distplot.4.de28db851d58b9a233d5f496989a9842053badc2.png?token=ACGd-B3rA1k0mMN4tEJ142JQ7mrzI7NHks5a_2yNwA%3D%3D)
-1.  ![distplot.10.de28db851d58b9a233d5f496989a9842053badc2.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/distplot.10.de28db851d58b9a233d5f496989a9842053badc2.png?token=ACGd-HZq41GxBxZeozcP2Iosk_ReJPeYks5a_2xuwA%3D%3D)
+1.  ![pairplot.200.de28db851d58b9a233d5f496989a9842053badc2.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/pairplot.200.de28db851d58b9a233d5f496989a9842053badc2.png)
+1.  ![distplot.2.de28db851d58b9a233d5f496989a9842053badc2.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/distplot.2.de28db851d58b9a233d5f496989a9842053badc2.png)
+1.  ![distplot.3.de28db851d58b9a233d5f496989a9842053badc2.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/distplot.3.de28db851d58b9a233d5f496989a9842053badc2.png)
+1.  ![distplot.4.de28db851d58b9a233d5f496989a9842053badc2.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/distplot.4.de28db851d58b9a233d5f496989a9842053badc2.png)
+1.  ![distplot.10.de28db851d58b9a233d5f496989a9842053badc2.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/distplot.10.de28db851d58b9a233d5f496989a9842053badc2.png)
 
 
 だんだん何をやってるのか分からなくなってきた。
@@ -2404,7 +2404,7 @@ kurenai3110 さん4位復帰かあ。 predicted rating = 2245.47 と赤予想だ
 当たりを引いた気がする。
 追い掛けるべきはまさにこれでは。
 
-![grad.5.modified.animated.gif](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/grad.5.modified.animated.gif?token=ACGd-Dp9efhCcj2IRLS7Pe3ZRcTnW4B8ks5bAg2swA%3D%3D)
+![grad.5.modified.animated.gif](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/grad.5.modified.animated.gif)
 
 いやでもそれ最初から知ってたよねという感もある。
 まあいずれにせよそうなるとやはり2点。
@@ -2629,8 +2629,8 @@ example testは結果が決まり次第出力されるということか。
 次の1枚目がSAのみ、2枚目が今回の修正。 やはり改善してるように見えるのだが。
 となるとやはり下がったのはバグか。
 
-1.  ![grad.5.86821dd57560c8e2ffd5ba90f5887056f49c1458.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/grad.5.86821dd57560c8e2ffd5ba90f5887056f49c1458.png?token=ACGd-ISTSkFddppDXE54BPuMnDkVBf6Dks5bAktOwA%3D%3D)
-1.  ![grad.5.58bf853ea47b4b9c7171e4e4d86ed929b2a28a16.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/grad.5.58bf853ea47b4b9c7171e4e4d86ed929b2a28a16.png?token=ACGd-FsnofhWQVinOhqxLhHM4yIreoqBks5bAkobwA%3D%3D)
+1.  ![grad.5.86821dd57560c8e2ffd5ba90f5887056f49c1458.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/grad.5.86821dd57560c8e2ffd5ba90f5887056f49c1458.png)
+1.  ![grad.5.58bf853ea47b4b9c7171e4e4d86ed929b2a28a16.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/grad.5.58bf853ea47b4b9c7171e4e4d86ed929b2a28a16.png)
 
 学校へ行く。 4限は授業。 今日は起きるのが遅かったため睡眠調整はいらないかなと思ったけど今ちょっと眠たくて不安。
 まあ完全に覚醒してても当然のように振り落とされるのでまあ。
@@ -4618,7 +4618,7 @@ seed <= 2000 で基準値からの平均の差分の頻度。
 割合として 700 / 2000 = 0.35 近くがそうであるようだ。
 なるほどとはなるがしかしこれは改善には役立たない図。 3分かからずで書けるやつなのでまあいいけど。
 
-![distplot.delta.00ffc6a103aaebd4585771932fb80c6922642b38.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/distplot.delta.00ffc6a103aaebd4585771932fb80c6922642b38.png?token=ACGd-PwOGTNNKNnLUpktfTXVLDdsQtprks5bBRcGwA%3D%3D)
+![distplot.delta.00ffc6a103aaebd4585771932fb80c6922642b38.png](https://raw.githubusercontent.com/kmyk/topcoder-marathon-match-tco-2018-r1-roads-and-junctions/documents/images/distplot.delta.00ffc6a103aaebd4585771932fb80c6922642b38.png)
 
 もうむり。
 評価関数にMonte Carloによる期待値を採用し各建設候補について使用する個数を焼き鈍したがだめだった。

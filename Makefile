@@ -40,7 +40,6 @@ score: a.out tester.jar
 	cat log/${timestamp}.json | python3 stat-results.py summary
 
 debug: a.out tester.jar
-	make score size=100 timestamp=${timestamp}
 	-mkdir images
 	for seed in $$(seq 100) ; do \
 		time java -jar tester.jar -exec ./a.out -seed $$seed ; \

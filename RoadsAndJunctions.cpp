@@ -143,23 +143,16 @@ vector<tuple<double, int, int> > construct_spanning_tree_prim(vector<point_t> co
     return edges;
 }
 
-double compute_cost_of_spanning_tree_kruskal(vector<point_t> const & cities, vector<point_t> const & junctions, vector<tuple<double, int, int> > const & city_tree) {
+double compute_cost_of_spanning_tree_kruskal_body(
+        vector<point_t> const & cities,
+        vector<point_t> const & junctions,
+        vector<tuple<double, int, int> > const & city_tree,
+        vector<tuple<double, int, int> > const & que) {
     int NC = cities.size();
     int NJ = junctions.size();
-
-    // prepare que
-    vector<tuple<double, int, int> > que;
-    REP (a, NC) REP (b, NJ) {
-        que.emplace_back(calc_distance(cities[a], junctions[b]), a, NC + b);
-    }
-    REP (a, NJ) REP (b, a) {
-        que.emplace_back(calc_distance(junctions[a], junctions[b]), NC + a, NC + b);
-    }
-    sort(ALL(que));
-
-    // run Kruskal with two pointers
     double acc = 0;
-    union_find_tree uft(NC + NJ);
+    static union_find_tree uft;
+    uft.data.assign(NC + NJ, -1);
     int i = 0, j = 0;
     REP (size, NC + NJ - 1) {
         double dist_i = INFINITY;
@@ -177,8 +170,24 @@ double compute_cost_of_spanning_tree_kruskal(vector<point_t> const & cities, vec
         tie(ignore, a, b) = (dist_i <= dist_j ? city_tree[i ++] : que[j ++]);
         uft.unite_trees(a, b);
     }
-
     return acc;
+}
+
+double compute_cost_of_spanning_tree_kruskal(
+        vector<point_t> const & cities,
+        vector<point_t> const & junctions,
+        vector<tuple<double, int, int> > const & city_tree) {
+    int NC = cities.size();
+    int NJ = junctions.size();
+    vector<tuple<double, int, int> > que;
+    REP (a, NC) REP (b, NJ) {
+        que.emplace_back(calc_distance(cities[a], junctions[b]), a, NC + b);
+    }
+    REP (a, NJ) REP (b, a) {
+        que.emplace_back(calc_distance(junctions[a], junctions[b]), NC + a, NC + b);
+    }
+    sort(ALL(que));
+    return compute_cost_of_spanning_tree_kruskal_body(cities, junctions, city_tree, que);
 }
 
 vector<point_t> pack_points(vector<int> const & b) {
@@ -548,6 +557,49 @@ vector<tuple<double, point_t, point_t> > find_pair_candidates_with_hill_climbing
     return pair_candidates;
 }
 
+vector<vector<pair<double, int> > > prepare_near_cities(vector<pair<double, point_t> > const & candidates, vector<tuple<double, point_t, point_t> > const & pair_candidates) {
+    vector<vector<pair<double, int> > > near_cities;
+    const int size = min(NC, 20);
+    auto add = [&](point_t p) {
+        near_cities.emplace_back();
+        auto & it = near_cities.back();
+        REP (a, NC) {
+            it.emplace_back(calc_distance(p, cities[a]), a);
+        }
+        sort(ALL(it));
+        it.resize(size);
+        it.shrink_to_fit();
+    };
+    for (auto candidate : candidates) {
+        add(candidate.second);
+    }
+    for (auto candidate : pair_candidates) {
+        add(get<1>(candidate));
+        add(get<2>(candidate));
+    }
+    return near_cities;
+}
+
+vector<tuple<double, int, int> > make_queue_from_near_cities(
+        vector<point_t> const & junctions,
+        vector<int> const & junction_indices,
+        vector<vector<pair<double, int> > > const & near_cities) {
+    int NC = cities.size();
+    int NJ = junctions.size();
+    vector<tuple<double, int, int> > que;
+    REP (b, NJ) {
+        for (auto const & it : near_cities[junction_indices[b]]) {
+            double dist; int a; tie(dist, a) = it;
+            que.emplace_back(dist, a, NC + b);
+        }
+    }
+    REP (a, NJ) REP (b, a) {
+        que.emplace_back(calc_distance(junctions[a], junctions[b]), NC + a, NC + b);
+    }
+    sort(ALL(que));
+    return que;
+}
+
 pair<vector<pair<double, point_t> >, vector<tuple<double, point_t, point_t> > > select_candidates_with_simulated_annealing(vector<pair<double, point_t> > const & candidates, vector<tuple<double, point_t, point_t> > const & pair_candidates) {
     // prepare
     int NJ1 = candidates.size();
@@ -560,18 +612,23 @@ pair<vector<pair<double, point_t> >, vector<tuple<double, point_t, point_t> > > 
 #else
     unordered_map<vector<bool>, double> memo;
 #endif
+    vector<vector<pair<double, int> > > near_cities = prepare_near_cities(candidates, pair_candidates);
     auto compute_cost_of_spanning_tree_mask = [&](vector<bool> const & mask) {
         if (memo.count(mask)) return memo[mask];
         vector<point_t> junctions;
-        REP (i, NJ) if (mask[i]) {
-            if (i < NJ1) {
-                junctions.push_back(candidates[i].second);
-            } else {
-                junctions.push_back(get<1>(pair_candidates[i - NJ1]));
-                junctions.push_back(get<2>(pair_candidates[i - NJ1]));
-            }
+        vector<int> junction_indices;
+        REP (i, NJ1) if (mask[i]) {
+            junctions.push_back(candidates[i].second);
+            junction_indices.push_back(i);
         }
-        return memo[mask] = compute_cost_of_spanning_tree_kruskal(cities, junctions, city_tree);
+        REP (i, NJ2) if (mask[NJ1 + i]) {
+            junctions.push_back(get<1>(pair_candidates[i]));
+            junctions.push_back(get<2>(pair_candidates[i]));
+            junction_indices.push_back(NJ1 + 2 * i);
+            junction_indices.push_back(NJ1 + 2 * i + 1);
+        }
+        vector<tuple<double, int, int> > que = make_queue_from_near_cities(junctions, junction_indices, near_cities);
+        return memo[mask] = compute_cost_of_spanning_tree_kruskal_body(cities, junctions, city_tree, que);
     };
     vector<bool> mask(NJ);
     double score = reference_score;

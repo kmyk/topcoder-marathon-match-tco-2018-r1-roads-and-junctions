@@ -645,7 +645,7 @@ pair<vector<pair<double, point_t> >, vector<tuple<double, point_t, point_t> > > 
     double sa_clock_end = clock_begin + TLE * 0.95;
     double temperature = 1;
     for (; ; ++ iteration) {
-        if (iteration % 10 == 0) {
+        if (temperature < 0.1 or iteration % 100 == 0) {
             double t = rdtsc();
             if (t > sa_clock_end) break;
             temperature = 1 - (t - sa_clock_begin) / (sa_clock_end - sa_clock_begin);

@@ -37,3 +37,12 @@ score: a.out tester.jar
 	parallel -- bash log/${timestamp}.sh {} ::: $$(seq 2000)
 	cat log/${timestamp}.json | python3 stat-results.py table
 	cat log/${timestamp}.json | python3 stat-results.py summary
+
+debug:
+	-mkdir images
+	for seed in $$(seq 100) ; do \
+		time java -jar tester.jar -exec ./a.out -seed $$seed ; \
+		cat test/$$seed.in test/$$seed.out | \
+			N=200 time ./plot-gradient.bin | \
+			python3 plot-gradient.py test/$$seed.in /dev/stdin test/$$seed.out --save images/grad.$$seed.${timestamp}.png --no-frame ; \
+	done

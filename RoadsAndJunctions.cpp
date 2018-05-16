@@ -617,7 +617,7 @@ pair<vector<pair<double, point_t> >, vector<tuple<double, point_t, point_t> > > 
         next_score += count(mask.begin(), mask.begin() + NJ1, true) * junction_cost;
         next_score += count(mask.begin() + NJ1, mask.end(),   true) * junction_cost * (2 + 0.5);  // pair candidates have much cost since both of the pair need to be successfully built
         double delta = score - next_score;
-        bool accept = next_score < score + eps or bernoulli_distribution(max(0.0, min(1.0, exp(delta) / temperature)))(gen);
+        bool accept = next_score < score + eps or bernoulli_distribution(max(0.0, min(1.0, 0.03 * exp(delta) / temperature)))(gen);
         if (accept and find(ALL(tabu_list), mask) != tabu_list.end()) accept = false;
         if (accept) {
             score = next_score;

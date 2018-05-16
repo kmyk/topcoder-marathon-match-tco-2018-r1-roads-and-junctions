@@ -160,11 +160,16 @@ double compute_cost_of_spanning_tree_kruskal_body(
             int a, b; tie(dist_i, a, b) = city_tree[i];
             if (not uft.is_same(a, b)) break;
         }
+        if (i == (int)city_tree.size()) dist_i = INFINITY;
         double dist_j = INFINITY;
         for (; j < (int)que.size(); ++ j) {
             int a, b; tie(dist_j, a, b) = que[j];
             if (not uft.is_same(a, b)) break;
         }
+        if (j == (int)que.size()) dist_j = INFINITY;
+#ifdef LOCAL
+        assert (i < (int)city_tree.size() or j < (int)que.size());
+#endif
         acc += min(dist_i, dist_j);
         int a, b;
         tie(ignore, a, b) = (dist_i <= dist_j ? city_tree[i ++] : que[j ++]);

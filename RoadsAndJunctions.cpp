@@ -391,10 +391,20 @@ double compute_cost_of_spanning_tree_2(point_t p, point_t q) {
 }
 
 void build_one_junction_many_times() {
-    REP (a, NC) REP (b, a) REP (c, b) {
-        int y = round((cities[a].y + cities[b].y + cities[c].y) / 3.0);
-        int x = round((cities[a].x + cities[b].x + cities[c].x) / 3.0);
-        compute_cost_of_spanning_tree_1((point_t) { y, x });
+    REP (a, NC) {
+        vector<int> order(a);
+        iota(ALL(order), 0);
+        int size = min<int>(order.size(), 30);
+        partial_sort(order.begin(), order.begin() + size, order.end(), [&](int b, int c) {
+            return calc_distance(cities[a], cities[b]) < calc_distance(cities[a], cities[c]);
+        });
+        REP (j, size) REP (k, j) {
+            int b = order[j];
+            int c = order[k];
+            int y = round((cities[a].y + cities[b].y + cities[c].y) / 3.0);
+            int x = round((cities[a].x + cities[b].x + cities[c].x) / 3.0);
+            compute_cost_of_spanning_tree_1((point_t) { y, x });
+        }
     }
     REP (a, NC) {
         REP3 (y, max(0, cities[a].y - 1), min(S, cities[a].y + 1) + 1) {
@@ -481,7 +491,14 @@ vector<tuple<double, point_t, point_t> > list_seed_of_pair_candidates(vector<pai
     }
     for (auto candidate : candidates) {
         point_t p = candidate.second;
-        REP (a, NC) {
+        vector<int> order(NC);
+        iota(ALL(order), 0);
+        int size = min(NC, 30);
+        partial_sort(order.begin(), order.begin() + size, order.end(), [&](int a, int b) {
+            return calc_distance(p, cities[a]) < calc_distance(p, cities[b]);
+        });
+        order.resize(size);
+        for (int a : order) {
             point_t q = cities[a];
             q.y += (q.y < p.y ? +1 : p.y < q.y ? -1 : 0);
             q.x += (q.x < p.x ? +1 : p.x < q.x ? -1 : 0);

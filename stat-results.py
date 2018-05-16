@@ -71,12 +71,13 @@ def main():
         if args.what == 'pairplot':
             sns.pairplot(df, vars='S NC junction_cost failure_probability reference_score NJ average_reference_delta'.split())
         elif args.what == 'distplot':
-            if args.seed is None:
-                parser.error('the following arguments are required: --seed')
-            try:
-                sns.distplot(df.ix[args.seed]['delta_samples'])
-            except np.linalg.linalg.LinAlgError:
-                sns.distplot(df.ix[args.seed]['delta_samples'], kde=False)
+            if args.seed is not None:
+                try:
+                    sns.distplot(df.ix[args.seed]['delta_samples'])
+                except np.linalg.linalg.LinAlgError:
+                    sns.distplot(df.ix[args.seed]['delta_samples'], kde=False)
+            else:
+                sns.distplot(df['average_reference_delta'], norm_hist=False, vertical=True, kde=False)
         else:
             assert False
         if args.save:

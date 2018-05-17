@@ -4907,6 +4907,12 @@ V = NC + NJ とする。
 
 解法など一覧:
 
+-   hakomo さん (provisional 3位)
+    -   <https://twitter.com/hakomof/status/996951803030790144>
+    -   <https://twitter.com/hakomof/status/996952835165118465>
+    -   SAの評価関数軽くはなさそうだけど良いのかな
+    -   <https://twitter.com/hakomof/status/996954601122185216>
+    -   さぼれない なるほど
 -   colun さん (provisional 5位)
     -   <https://twitter.com/colun/status/996921337837858816>
     -   「your/bestの最小化と比較してbest/yourの最大化はvolatilityが高い解を出す必要があり、更に(best/your)^2だともっとvolatilityの高い解が必要になる」 えー
@@ -4914,6 +4920,15 @@ V = NC + NJ とする。
     -   次数やばいけど時間は大丈夫なのかな 各変数ごとにかな
     -   <https://twitter.com/colun/status/996927249768112128>
     -   にゃーん
+-   atsT5515 さん (provisional 10位)
+    -   <https://twitter.com/ats5515/status/996952440258752513>
+    -   なるほど分からん
+    -   [TCO18 MM R1 RoadsAndJunctions  参加記録 - ats5515の日記](http://ats5515.hatenablog.com/entry/2018/05/17/122549)
+    -   <https://twitter.com/ats5515/status/996954732626300928>
+    -   seed = 1101 だと期待値推定 4532.52 なのでぜんぜんだめだった
+-   hoshi524 さん (provisional 19位)
+    -   <https://twitter.com/hoshi524/status/996986156725121029>
+    -   だいたい同じ
 -   yowa さん (provisional 21位)
     -   <https://twitter.com/yowa/status/996922935947358208>
     -   やってること一緒に見える
@@ -4921,9 +4936,21 @@ V = NC + NJ とする。
     -   そうなのか
 -   iehn さん (provisional 26位)
     -   <https://twitter.com/arimasenu/status/996923609066098688>
+-   EvbCFfp1XB さん (provisional 33位)
+    -   [TCO2018 Round 1 : RoadsAndJunctions : EvbCFfp1XB](http://spvyxgfbtewiazrl.doorblog.jp/archives/51995260.html)
 -   fmhr さん (provisional 44位)
     -   <https://twitter.com/fmhr__/status/996927271012188160>
     -   Report.dvi "The Euclidean Steiner Tree Problem: Simulated Annealing and Other Heuristics" なにそれ
+    -   <https://twitter.com/fmhr__/status/996951341917351936>
+    -   "最短ネットワーク問題に対するヒューリスティック解法" 日本語じゃん
+-   chokudai さん (provisional 46位)
+    -   <https://twitter.com/chokudai/status/996945375423430656>
+    -   それはそう なぜ気付かなかったのか
+    -   前回も同様だったしほんとうに頭が付いてない 定数を無視して微分
+-   shamal さん (provisional 47位)
+    -   <https://twitter.com/shamal_ref/status/996957650209275911>
+    -   <https://twitter.com/shamal_ref/status/996962110620909568>
+    -   これ嘘では
 -   my316g さん (provisional 51位)
     -   [2018 TCO MM : Round 1 - 絶滅](http://chillbrains.hateblo.jp/entry/TCOMMRound1)
     -   heatmapをinteractiveにしててえらい
@@ -4936,5 +4963,9 @@ V = NC + NJ とする。
 他:
 
 -   iwash31 list: <https://twitter.com/iwashi31/lists/tco18mmr1>
+-   agw togetter: <https://togetter.com/li/1226040>
 -   [Some complains about the problem - TopCoder Forums](https://apps.topcoder.com/forums/?module=Thread&threadID=918155&start=0)
     -   Pshyo がおこ
+    -   すごく伸びてる
+    -   えいご めんどい
+-   [Post your approach - TopCoder Forums](https://apps.topcoder.com/forums/?module=Thread&threadID=918158&start=0)

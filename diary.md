@@ -4942,6 +4942,8 @@ V = NC + NJ とする。
     -   次数やばいけど時間は大丈夫なのかな 各変数ごとにかな
     -   <https://twitter.com/colun/status/996927249768112128>
     -   にゃーん
+    -   <https://twitter.com/colun/status/997429387728318465>
+    -   内製visualizer: <https://s3-ap-northeast-1.amazonaws.com/colun-share-sandbox/20180518-tco18mr1/result7.html>
 -   atsT5515 さん (provisional 10位)
     -   <https://twitter.com/ats5515/status/996952440258752513>
     -   なるほど分からん
@@ -4957,6 +4959,12 @@ V = NC + NJ とする。
     -   full Steiner tree (FST) とは 「Steiner tree であって、terminal nodes 同士を繋ぐ辺を含まないもの」
         -   "Generate all FSTs of size 3 (Fermat Point) & 4 (Hill Climbing)" って言ってるので私のやったのとほぼ同じはず
     -   <https://apps.topcoder.com/forums/?module=Thread&threadID=918158&start=0&mc=14#2267849>
+-   yuuki さん (provisional 13位)
+    -   <https://twitter.com/yuuki3655/status/996931069214523393>
+    -   <https://twitter.com/yuuki3655/status/996969344729989125>
+    -   repo公開予告
+    -   [yuuki3655/TCMM-TCO2018-R1-RoadsAndJunctions](https://github.com/yuuki3655/TCMM-TCO2018-R1-RoadsAndJunctions)
+    -   私以外にrepoを公開してる人を始めて見た気がする 応援したい しかしとりあえずまずDRYにするとか諸々をまとめるとかしてほしい
 -   hoshi524 さん (provisional 19位)
     -   <https://twitter.com/hoshi524/status/996986156725121029>
     -   だいたい同じ

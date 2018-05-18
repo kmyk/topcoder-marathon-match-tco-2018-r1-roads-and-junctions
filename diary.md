@@ -4656,7 +4656,26 @@ V = NC + NJ とする。
 次回はちゃんと考察するようにしたい。 それ毎回言ってませんか？ ちゃんと考察するとは何を意味しますか？ それができたら苦労しないのでは？ 分からない。
 とりあえずround 2までの間に以前の回も含めて復習をする。
 
-### 感想戦
+### まとめ
+
+方針:
+
+1.  適当な始点からの山登りで候補点を列挙
+    -   3点の重心を始点としたがFermat点を使うべきだった
+    -   Delaunay三角形分割は省略し無理矢理計算した
+1.  加えて同様に点の対の形の候補を列挙
+1.  候補を使用するか否かのbit列を焼き鈍し
+    -   評価関数はすべて建設が成功した場合のraw score
+    -   E = NC + k NJ + NJ^2 とおいて O(E log E) のKruskal法
+        -   事前に町だけで最小全域木を作ってそれに含まれない辺を削る
+        -   交差点についても近い順に k 個の町を列挙しておく
+            -   よく考えたら k = 1 個でよかった
+    -   近傍として交換を入れたのは効いた
+    -   tabu searchっぽくしたのも効いた
+    -   1e5 ~ 1e7 iterationぐらい回る
+1.  それぞれの候補に対し実際にいくつの交差点を設置するかを個別に決定
+    -   ここ雑だったけどたぶんあまり変わらない
+    -   raw score の2乗を最小化すべきというのは気付いてなかった
 
 <details>
 <summary>順位表 2018年  5月 17日 木曜日 10:31:16 JST</summary>
@@ -4907,6 +4926,9 @@ V = NC + NJ とする。
 
 解法など一覧:
 
+-   okazaki さん (provisional 1位)
+    -    <https://apps.topcoder.com/forums/?module=Thread&threadID=918158&start=0&mc=14#2267851>
+    -    SAしないって言ってるけどあまり有効には聞こえない
 -   hakomo さん (provisional 3位)
     -   <https://twitter.com/hakomof/status/996951803030790144>
     -   <https://twitter.com/hakomof/status/996952835165118465>
@@ -4926,6 +4948,15 @@ V = NC + NJ とする。
     -   [TCO18 MM R1 RoadsAndJunctions  参加記録 - ats5515の日記](http://ats5515.hatenablog.com/entry/2018/05/17/122549)
     -   <https://twitter.com/ats5515/status/996954732626300928>
     -   seed = 1101 だと期待値推定 4532.52 なのでぜんぜんだめだった
+-   nika さん (provisional 11位)
+    -   <https://apps.topcoder.com/forums/?module=Thread&threadID=918158&start=0&mc=14#2267841>
+-   Psyho さん (provisional 12位)
+    -   <https://apps.topcoder.com/forums/?module=Thread&threadID=918158&start=0&mc=14#2267817>
+    -   [GeoSteiner](http://www.geosteiner.com/) という最先端のsolverがある
+    -   Lune property とは 「頂点 w であって 辺 d(u, w) + d(w, v) \lt d(u, v) なものが存在するならば、 辺 (u, v) はMSTに含まれない」
+    -   full Steiner tree (FST) とは 「Steiner tree であって、terminal nodes 同士を繋ぐ辺を含まないもの」
+        -   "Generate all FSTs of size 3 (Fermat Point) & 4 (Hill Climbing)" って言ってるので私のやったのとほぼ同じはず
+    -   <https://apps.topcoder.com/forums/?module=Thread&threadID=918158&start=0&mc=14#2267849>
 -   hoshi524 さん (provisional 19位)
     -   <https://twitter.com/hoshi524/status/996986156725121029>
     -   だいたい同じ
@@ -4956,16 +4987,20 @@ V = NC + NJ とする。
     -   heatmapをinteractiveにしててえらい
 -   koyumeishi さん (provisional 62位)
     -   <https://twitter.com/koyumeishi_/status/996921541051928576>
+    -   <https://twitter.com/koyumeishi_/status/997124301579943936>
+    -   Fermat点の一般化 [Geometric median - Wikipedia](https://en.wikipedia.org/wiki/Geometric_median)
 -   NobuMiu さん (provisional 64位)
     -   <https://twitter.com/nico_shindannin/status/996922762001182721>
     -   Fermat点を知らず [フェルマー点 - Wikipedia](https://ja.wikipedia.org/wiki/%E3%83%95%E3%82%A7%E3%83%AB%E3%83%9E%E3%83%BC%E7%82%B9) 常識の不足
+-   starwand さん (provisional 78位)
+    -   <https://twitter.com/__starwand/status/997243283993604096>
 
 他:
 
--   iwash31 list: <https://twitter.com/iwashi31/lists/tco18mmr1>
--   agw togetter: <https://togetter.com/li/1226040>
+-   iwash31 さん list: <https://twitter.com/iwashi31/lists/tco18mmr1>
+-   agw さん togetter: <https://togetter.com/li/1226040>
+-   eris_c さん togetter: <https://togetter.com/li/1228291>
 -   [Some complains about the problem - TopCoder Forums](https://apps.topcoder.com/forums/?module=Thread&threadID=918155&start=0)
-    -   Pshyo がおこ
+    -   Psyho がおこ
     -   すごく伸びてる
-    -   えいご めんどい
 -   [Post your approach - TopCoder Forums](https://apps.topcoder.com/forums/?module=Thread&threadID=918158&start=0)

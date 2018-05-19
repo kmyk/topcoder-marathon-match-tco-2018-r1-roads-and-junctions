@@ -4935,6 +4935,17 @@ V = NC + NJ とする。
     -   SAの評価関数軽くはなさそうだけど良いのかな
     -   <https://twitter.com/hakomof/status/996954601122185216>
     -   さぼれない なるほど
+-   tomerun さん (provisional 4位)
+    -   <https://twitter.com/tomerun/status/996920793597595648>
+    -   <https://twitter.com/tomerun/status/997094122690306053>
+    -   連結成分とは
+    -   <https://twitter.com/tomerun/status/996930172333965312>
+    -   O((N^1/2) (logN)^2) なにそれ
+    -   [tomerun / Marathon / ソース  / TCO18R1 &mdash; Bitbucket](https://bitbucket.org/tomerun/marathon/src/master/TCO18R1/)
+    -   `bayes_opt.BayesianOptimization` ([fmfn/BayesianOptimization](https://github.com/fmfn/BayesianOptimization)) で調整の自動化してる: <https://bitbucket.org/tomerun/marathon/src/e24f8b6aa30c27dc78320910677298d335cd8073/TCO18R1/optimizer.py?at=master&fileviewer=file-view-default>
+    -   他の調整のalgorithmとしては[hyperopt](http://hyperopt.github.io/hyperopt/)というのを見付けた
+    -   <https://twitter.com/tomerun/status/997545562441269248>
+    -   「一番最初の印象はモンテカルロでの評価だった」
 -   colun さん (provisional 5位)
     -   <https://twitter.com/colun/status/996921337837858816>
     -   「your/bestの最小化と比較してbest/yourの最大化はvolatilityが高い解を出す必要があり、更に(best/your)^2だともっとvolatilityの高い解が必要になる」 えー
@@ -4944,6 +4955,10 @@ V = NC + NJ とする。
     -   にゃーん
     -   <https://twitter.com/colun/status/997429387728318465>
     -   内製visualizer: <https://s3-ap-northeast-1.amazonaws.com/colun-share-sandbox/20180518-tco18mr1/result7.html>
+    -   <https://twitter.com/colun/status/997552169913012224>
+    -   気持ちは分かるけど素朴にR^2を仮定してるという嘘があり実際はもっとひどそう
+    -   <https://twitter.com/colun/status/997552720683843584>
+    -   つまり交換による近傍が効いたよねということか
 -   atsT5515 さん (provisional 10位)
     -   <https://twitter.com/ats5515/status/996952440258752513>
     -   なるほど分からん
@@ -5002,6 +5017,10 @@ V = NC + NJ とする。
     -   Fermat点を知らず [フェルマー点 - Wikipedia](https://ja.wikipedia.org/wiki/%E3%83%95%E3%82%A7%E3%83%AB%E3%83%9E%E3%83%BC%E7%82%B9) 常識の不足
 -   starwand さん (provisional 78位)
     -   <https://twitter.com/__starwand/status/997243283993604096>
+-   phyllo さん (provisional 92位)
+    -   <https://twitter.com/phyllo/status/996968561967951872>
+    -   [TCO18 MM R1 RoadsAndJunctions - phyllo’s algorithm note](http://phyllo-algo.hatenablog.com/entry/2018/05/18/000625)
+    -   [Siv3D](https://github.com/Siv3D/OpenSiv3D)が言及されてる 認識してなかったがこの方向を探すとよさそう しかし類似projectsとの比較ぐらい書いてくれ 差別点が日本語であることだけならそれでもよいが
 
 他:
 
